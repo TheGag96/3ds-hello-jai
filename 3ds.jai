@@ -9737,7 +9737,7 @@ GSPLCD_SetBrightness :: (screen: u32, brightness: u32) -> Result #foreign libctr
 GSPLCD_SetBrightnessRaw :: (screen: u32, brightness: u32) -> Result #foreign libctru;
 
 /// Key values.
-KEY :: enum u32 {
+KEY :: enum_flags u32 {
     A            :: 1;
     B            :: 2;
     SELECT       :: 4;
@@ -9824,28 +9824,28 @@ hidScanInput :: () -> void #foreign libctru;
 * Individual buttons can be extracted using binary AND.
 * @return 32-bit bitmask of held buttons (1+ frames).
 */
-hidKeysHeld :: () -> u32 #foreign libctru;
+hidKeysHeld :: () -> KEY #foreign libctru;
 
 /**
 * @brief Returns a bitmask of newly pressed buttons, this frame.
 * Individual buttons can be extracted using binary AND.
 * @return 32-bit bitmask of newly pressed buttons.
 */
-hidKeysDown :: () -> u32 #foreign libctru;
+hidKeysDown :: () -> KEY #foreign libctru;
 
 /**
 * @brief Returns a bitmask of newly pressed or repeated buttons, this frame.
 * Individual buttons can be extracted using binary AND.
 * @return 32-bit bitmask of newly pressed or repeated buttons.
 */
-hidKeysDownRepeat :: () -> u32 #foreign libctru;
+hidKeysDownRepeat :: () -> KEY #foreign libctru;
 
 /**
 * @brief Returns a bitmask of newly released buttons, this frame.
 * Individual buttons can be extracted using binary AND.
 * @return 32-bit bitmask of newly released buttons.
 */
-hidKeysUp :: () -> u32 #foreign libctru;
+hidKeysUp :: () -> KEY #foreign libctru;
 
 /**
 * @brief Reads the current touch position.

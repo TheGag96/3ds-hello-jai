@@ -8,7 +8,7 @@
 libc :: #foreign_system_library,no_dll "libc";
 printf :: (fmt: *u8, va_args: .. Any) -> s32 #foreign libc;
 
-main :: (argc: int, argv: **u8) -> s32 #c_call {
+main :: () {
   gfxInitDefault();
 
   //Initialize console on top screen. Using null as the second argument tells the console library to use the internal console structure as current one
@@ -30,7 +30,7 @@ main :: (argc: int, argv: **u8) -> s32 #c_call {
     hidScanInput();
 
     //hidKeysDown returns information about which buttons have been just pressed (and they weren't in the previous frame)
-    kDown: KEY = xx hidKeysDown();
+    kDown: KEY = hidKeysDown();
     if (kDown & KEY.START) break; // break in order to return to hbmenu
 
     // Flush and swap framebuffers
@@ -42,5 +42,4 @@ main :: (argc: int, argv: **u8) -> s32 #c_call {
   }
 
   gfxExit();
-  return 0;
 }
