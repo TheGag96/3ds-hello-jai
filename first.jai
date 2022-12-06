@@ -1,6 +1,8 @@
 #import "Basic";
 #import "Compiler";
 
+OPTIMIZED_BUILD :: false;
+
 build :: () {
   w := compiler_create_workspace(name = "3DS");
   if !w {
@@ -9,15 +11,27 @@ build :: () {
   }
 
   target_options := get_build_options(w);
-  target_options.backend = .LLVM;
-  target_options.output_type = .OBJECT_FILE;
-  target_options.os_target = .NONE;
-  target_options.llvm_options.target_system_triple = "arm-none-eabi";
-  target_options.llvm_options.target_system_cpu = "mpcorenovfp";
+
+  target_options.backend                             = .LLVM;
+  target_options.output_type                         = .OBJECT_FILE;
+  target_options.os_target                           = .NONE;
+  target_options.llvm_options.target_system_triple   = "arm-none-eabi";
+  target_options.llvm_options.target_system_cpu      = "mpcorenovfp";
   target_options.llvm_options.target_system_features = "+vfp2";
-  target_options.output_executable_name = "3ds";
-  target_options.llvm_options.output_bitcode = true;
-  target_options.llvm_options.enable_split_modules = false;
+  target_options.output_executable_name              = "3ds";
+  target_options.llvm_options.output_bitcode         = true;
+  target_options.llvm_options.enable_split_modules   = false;
+
+  #if OPTIMIZED_BUILD {
+    target_options.optimization_level                       = .RELEASE;
+    target_options.llvm_options.code_gen_optimization_level = 3;
+    target_options.llvm_options.enable_tail_calls           = true;
+    target_options.llvm_options.enable_loop_unrolling       = true;
+    target_options.llvm_options.enable_slp_vectorization    = true;
+    target_options.llvm_options.enable_loop_vectorization   = true;
+    target_options.llvm_options.disable_inlining            = false;
+  }
+
   set_build_options(target_options, w);
 
   compiler_begin_intercept(w);
