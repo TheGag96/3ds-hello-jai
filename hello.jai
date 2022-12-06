@@ -4,6 +4,8 @@
 */
 
 #import,file "3ds.jai";
+#import,file "citro3d.jai";
+#import,file "citro2d.jai";
 
 libc :: #foreign_system_library,no_dll "libc";
 printf :: (fmt: *u8, va_args: .. Any) -> s32 #foreign libc;

@@ -13070,18 +13070,18 @@ GPU_PROCTEX_LUTID :: enum u8 {
 
 /// Supported color buffer formats.
 GPU_COLORBUF :: enum u8 {
-    A8    :: 0;
-    _8    :: 1;
-    A5551 :: 2;
-    _565  :: 3;
-    A4    :: 4;
+    RGBA8    :: 0;
+    RGB8     :: 1;
+    RGBA5551 :: 2;
+    RGB565   :: 3;
+    RGBA4    :: 4;
 }
 
 /// Supported depth buffer formats.
 GPU_DEPTHBUF :: enum u8 {
-    _16          :: 0;
-    _24          :: 2;
-    _24_STENCIL8 :: 3;
+    DEPTH16          :: 0;
+    DEPTH24          :: 2;
+    DEPTH24_STENCIL8 :: 3;
 }
 
 /// Test functions.
@@ -13273,9 +13273,9 @@ GPU_COMBINEFUNC :: enum u8 {
 
 /// Texture scale factors.
 GPU_TEVSCALE :: enum u8 {
-    _1 :: 0;
-    _2 :: 1;
-    _4 :: 2;
+    X1 :: 0;
+    X2 :: 1;
+    X4 :: 2;
 }
 
 /// Fresnel options.

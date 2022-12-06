@@ -50,6 +50,123 @@ C2D_ImageTint :: struct {
     corners: [4] C2D_Tint;
 }
 
+/** @defgroup Helper Helper functions
+ *  @{
+ */
+
+/** @brief Clamps a value between bounds
+ *  @param[in] x The value to clamp
+ *  @param[in] min The lower bound
+ *  @param[in] max The upper bound
+ *  @returns The clamped value
+ */
+C2D_Clamp :: inline (x: float, min: float, max: float) -> float {
+    return ifx x <= min then min else (ifx x >= max then max else x);
+}
+
+/** @brief Converts a float to u8
+ *  @param[in] x Input value (0.0~1.0)
+ *  @returns Output value (0~255)
+ */
+C2D_FloatToU8 :: inline (x: float) -> u8 {
+    return cast(u8)(255.0*C2D_Clamp(x, 0.0, 1.0)+0.5);
+}
+
+/** @brief Builds a 32-bit RGBA color value
+ *  @param[in] r Red component (0~255)
+ *  @param[in] g Green component (0~255)
+ *  @param[in] b Blue component (0~255)
+ *  @param[in] a Alpha component (0~255)
+ *  @returns The 32-bit RGBA color value
+ */
+C2D_Color32 :: inline (r: u8, g: u8, b: u8, a: u8) -> u32 {
+    return r | (g << cast(u32)8) | (b << cast(u32)16) | (a << cast(u32)24);
+}
+
+/** @brief Builds a 32-bit RGBA color value from float values
+ *  @param[in] r Red component (0.0~1.0)
+ *  @param[in] g Green component (0.0~1.0)
+ *  @param[in] b Blue component (0.0~1.0)
+ *  @param[in] a Alpha component (0.0~1.0)
+ *  @returns The 32-bit RGBA color value
+ */
+C2D_Color32f :: inline (r: float, g: float, b: float, a: float) -> u32 {
+    return C2D_Color32(C2D_FloatToU8(r),C2D_FloatToU8(g),C2D_FloatToU8(b),C2D_FloatToU8(a));
+}
+
+/** @brief Configures one corner of an image tint structure
+ *  @param[in] tint Image tint structure
+ *  @param[in] corner The corner of the image to tint
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+C2D_SetImageTint :: inline (tint: *C2D_ImageTint, corner: C2D_Corner, color: u32, blend: float) {
+    tint.corners[corner].color = color;
+    tint.corners[corner].blend = blend;
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to all corners
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+C2D_PlainImageTint :: inline (tint: *C2D_ImageTint, color: u32, blend: float) {
+    C2D_SetImageTint(tint, C2D_TopLeft,  color, blend);
+    C2D_SetImageTint(tint, C2D_TopRight, color, blend);
+    C2D_SetImageTint(tint, C2D_BotLeft,  color, blend);
+    C2D_SetImageTint(tint, C2D_BotRight, color, blend);
+}
+
+/** @brief Configures an image tint structure to just apply transparency to the image
+ *  @param[in] tint Image tint structure
+ *  @param[in] alpha Alpha transparency value to apply to the image
+ */
+C2D_AlphaImageTint :: inline (tint: *C2D_ImageTint, alpha: float) {
+    C2D_PlainImageTint(tint, C2D_Color32f(0.0, 0.0, 0.0, alpha), 0.0);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the top side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+C2D_TopImageTint :: inline (tint: *C2D_ImageTint, color: u32, blend: float) {
+    C2D_SetImageTint(tint, C2D_TopLeft,  color, blend);
+    C2D_SetImageTint(tint, C2D_TopRight, color, blend);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the bottom side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+C2D_BottomImageTint :: inline (tint: *C2D_ImageTint, color: u32, blend: float) {
+    C2D_SetImageTint(tint, C2D_BotLeft,  color, blend);
+    C2D_SetImageTint(tint, C2D_BotRight, color, blend);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the left side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+C2D_LeftImageTint :: inline (tint: *C2D_ImageTint, color: u32, blend: float) {
+    C2D_SetImageTint(tint, C2D_TopLeft, color, blend);
+    C2D_SetImageTint(tint, C2D_BotLeft, color, blend);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the right side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+C2D_RightImageTint :: inline (tint: *C2D_ImageTint, color: u32, blend: float) {
+    C2D_SetImageTint(tint, C2D_TopRight, color, blend);
+    C2D_SetImageTint(tint, C2D_BotRight, color, blend);
+}
+
+/** @} */
+
 /** @brief Initialize citro2d
 *  @param[in] maxObjects Maximum number of 2D objects that can be drawn per frame.
 *  @remarks Pass C2D_DEFAULT_MAX_OBJECTS as a starting point.
@@ -124,6 +241,15 @@ C2D_CreateScreenTarget :: (screen: gfxScreen_t, side: gfx3dSide_t) -> *C3D_Rende
 */
 C2D_TargetClear :: (target: *C3D_RenderTarget, color: u32) -> void #foreign libcitro2d;
 
+/** @brief Helper function to begin drawing a 2D scene on a render target
+ *  @param[in] target Render target to draw the 2D scene to
+ */
+C2D_SceneBegin :: inline (target: *C3D_RenderTarget) {
+    C2D_Flush();
+    C3D_FrameDrawOn(target);
+    C2D_SceneTarget(target);
+}
+
 /** @brief Configures the fading color
 *  @param[in] color 32-bit RGBA color value to be used as the fading color (0 by default)
 *  @remark The alpha component of the color is used as the strength of the fading color.
@@ -149,6 +275,51 @@ C2D_SetTintMode :: (mode: C2D_TintMode) -> void #foreign libcitro2d;
 *  @returns true on success, false on failure
 */
 C2D_DrawImage :: (img: C2D_Image, params: *C2D_DrawParams, tint: *C2D_ImageTint) -> bool #foreign libcitro2d;
+
+/** @brief Draws an image using the GPU (variant accepting position/scaling)
+ *  @param[in] img Handle of the image to draw
+ *  @param[in] x X coordinate at which to place the top left corner of the image
+ *  @param[in] y Y coordinate at which to place the top left corner of the image
+ *  @param[in] depth Depth value to draw the image with
+ *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
+ *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0); negative values apply a horizontal flip
+ *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0); negative values apply a vertical flip
+ */
+C2D_DrawImageAt :: inline (img: C2D_Image, x: float, y: float, depth: float,
+    tint: *C2D_ImageTint = null,
+    scaleX: float = 1.0, scaleY: float = 1.0) -> bool
+{
+    params: C2D_DrawParams =
+    .{
+        .{ x, y, scaleX*img.subtex.width, scaleY*img.subtex.height },
+        .{ 0.0, 0.0 },
+        depth, 0.0
+    };
+    return C2D_DrawImage(img, *params, tint);
+}
+
+/** @brief Draws an image using the GPU (variant accepting position/scaling/rotation)
+ *  @param[in] img Handle of the image to draw
+ *  @param[in] x X coordinate at which to place the center of the image
+ *  @param[in] y Y coordinate at which to place the center of the image
+ *  @param[in] depth Depth value to draw the image with
+ *  @param[in] angle Angle (in radians) to rotate the image by, counter-clockwise
+ *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
+ *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0); negative values apply a horizontal flip
+ *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0); negative values apply a vertical flip
+ */
+C2D_DrawImageAtRotated :: inline (img: C2D_Image, x: float, y: float, depth: float, angle: float,
+    tint: *C2D_ImageTint = null,
+    scaleX: float = 1.0, scaleY: float = 1.0) -> bool
+{
+    params: C2D_DrawParams =
+    .{
+        .{ x, y, scaleX*img.subtex.width, scaleY*img.subtex.height },
+        .{ (scaleX*img.subtex.width)/2.0, (scaleY*img.subtex.height)/2.0 },
+        depth, angle
+    };
+    return C2D_DrawImage(img, *params, tint);
+}
 
 /** @brief Draws a plain triangle using the GPU
 *  @param[in] x0 X coordinate of the first vertex of the triangle
@@ -188,6 +359,72 @@ C2D_DrawLine :: (x0: float, y0: float, clr0: u32, x1: float, y1: float, clr1: u3
 *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the rectangle
 */
 C2D_DrawRectangle :: (x: float, y: float, z: float, w: float, h: float, clr0: u32, clr1: u32, clr2: u32, clr3: u32) -> bool #foreign libcitro2d;
+
+/** @brief Draws a plain rectangle using the GPU (with a solid color)
+ *  @param[in] x X coordinate of the top-left vertex of the rectangle
+ *  @param[in] y Y coordinate of the top-left vertex of the rectangle
+ *  @param[in] z Z coordinate (depth value) to draw the rectangle with
+ *  @param[in] w Width of the rectangle
+ *  @param[in] h Height of the rectangle
+ *  @param[in] clr 32-bit RGBA color of the rectangle
+ */
+C2D_DrawRectSolid :: inline (
+    x: float, y: float, z: float, w: float, h: float,
+    clr: u32) -> bool
+{
+    return C2D_DrawRectangle(x,y,z,w,h,clr,clr,clr,clr);
+}
+
+/** @brief Draws a ellipse using the GPU (with a solid color)
+ *  @param[in] x X coordinate of the top-left vertex of the ellipse
+ *  @param[in] y Y coordinate of the top-left vertex of the ellipse
+ *  @param[in] z Z coordinate (depth value) to draw the ellipse with
+ *  @param[in] w Width of the ellipse
+ *  @param[in] h Height of the ellipse
+ *  @param[in] clr 32-bit RGBA color of the ellipse
+ *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
+*/
+C2D_DrawEllipseSolid :: inline (
+    x: float, y: float, z: float, w: float, h: float,
+    clr: u32) -> bool
+{
+    return C2D_DrawEllipse(x,y,z,w,h,clr,clr,clr,clr);
+}
+
+/** @brief Draws a circle (an ellipse with identical width and height) using the GPU
+ *  @param[in] x X coordinate of the center of the circle
+ *  @param[in] y Y coordinate of the center of the circle
+ *  @param[in] z Z coordinate (depth value) to draw the ellipse with
+ *  @param[in] radius Radius of the circle
+ *  @param[in] clr0 32-bit RGBA color of the top-left corner of the ellipse
+ *  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
+ *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
+ *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
+ *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
+*/
+C2D_DrawCircle :: inline (
+    x: float, y: float, z: float, radius: float,
+    clr0: u32, clr1: u32, clr2: u32, clr3: u32) -> bool
+{
+    return C2D_DrawEllipse(
+        x - radius,y - radius,z,radius*2,radius*2,
+        clr0,clr1,clr2,clr3);
+}
+
+/** @brief Draws a circle (an ellipse with identical width and height) using the GPU (with a solid color)
+ *  @param[in] x X coordinate of the center of the circle
+ *  @param[in] y Y coordinate of the center of the circle
+ *  @param[in] z Z coordinate (depth value) to draw the ellipse with
+ *  @param[in] radius Radius of the circle
+ *  @param[in] clr 32-bit RGBA color of the ellipse
+ *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
+*/
+C2D_DrawCircleSolid :: inline (
+    x: float, y: float, z: float, radius: float,
+    clr: u32) -> bool
+{
+    return C2D_DrawCircle(x,y,z,radius,clr,clr,clr,clr);
+}
 
 /** @brief Draws an ellipse using the GPU
 *  @param[in] x X coordinate of the top-left vertex of the ellipse
