@@ -778,6 +778,14 @@ MtxStack_Push :: (stk: *C3D_MtxStack) -> *C3D_Mtx #foreign libcitro3d;
 MtxStack_Pop :: (stk: *C3D_MtxStack) -> *C3D_Mtx #foreign libcitro3d;
 MtxStack_Update :: (stk: *C3D_MtxStack) #foreign libcitro3d;
 
+C3D_FVUnif:    [2][C3D_FVUNIF_COUNT] C3D_FVec  #elsewhere;
+C3D_IVUnif:    [2][C3D_IVUNIF_COUNT] C3D_IVec  #elsewhere;
+C3D_BoolUnifs: [2] u16                         #elsewhere;
+
+C3D_FVUnifDirty:    [2][C3D_FVUNIF_COUNT] bool #elsewhere;
+C3D_IVUnifDirty:    [2][C3D_IVUNIF_COUNT] bool #elsewhere;
+C3D_BoolUnifsDirty: [2] bool                   #elsewhere;
+
 C3D_FVUnifWritePtr :: inline (type: GPU_SHADER_TYPE, id: s32, size: s32) -> *C3D_FVec {
     for 0..size-1 {
         C3D_FVUnifDirty[type][id+i] = true;

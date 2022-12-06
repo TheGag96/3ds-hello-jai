@@ -3,6 +3,8 @@
 // Created with help of Bindings_Generator
 //
 
+#import "Basic";
+
 size_t    :: u32;
 ssize_t   :: s32;
 ptrdiff_t :: s32;
@@ -63,6 +65,11 @@ stat :: struct {
 }
 
 __3DS__ :: 1;
+
+BIT :: (x: $T) -> T {
+    return 1 << x;
+}
+
 SOL_SOCKET :: 0xFFFF;
 
 PF_UNSPEC :: 0;
@@ -174,67 +181,90 @@ SYSCLOCK_ARM11_NEW :: SYSCLOCK_ARM11_LGR2;
 CPU_TICKS_PER_MSEC :: SYSCLOCK_ARM11 / 1000.0;
 CPU_TICKS_PER_USEC :: SYSCLOCK_ARM11 / 1000000.0;
 
+/// Packs a system version from its components.
+SYSTEM_VERSION :: inline (major: u32, minor: u32, revision: u32) -> u32 {
+    return (major << 24) | (minor << 16) | (revision << 8);
+}
+
+/// Retrieves the major version from a packed system version.
+GET_VERSION_MAJOR :: inline (version: u32) -> u32 {
+   return version >> 24;
+}
+
+/// Retrieves the minor version from a packed system version.
+GET_VERSION_MINOR :: inline (version: u32) -> u32 {
+   return (version >> 16) & 0xFF;
+}
+
+/// Retrieves the revision version from a packed system version.
+GET_VERSION_REVISION :: inline (version: u32) -> u32 {
+ return (version >> 8) & 0xFF;
+}
+
 OS_HEAP_AREA_BEGIN :: 0x08000000;
-OS_HEAP_AREA_END :: 0x0E000000;
+OS_HEAP_AREA_END   :: 0x0E000000;
 
 OS_MAP_AREA_BEGIN :: 0x10000000;
-OS_MAP_AREA_END :: 0x14000000;
+OS_MAP_AREA_END   :: 0x14000000;
 
 OS_OLD_FCRAM_VADDR :: 0x14000000;
 OS_OLD_FCRAM_PADDR :: 0x20000000;
-OS_OLD_FCRAM_SIZE :: 0x8000000;
+OS_OLD_FCRAM_SIZE  :: 0x8000000;
 
 OS_QTMRAM_VADDR :: 0x1E800000;
 OS_QTMRAM_PADDR :: 0x1F000000;
-OS_QTMRAM_SIZE :: 0x400000;
+OS_QTMRAM_SIZE  :: 0x400000;
 
 OS_MMIO_VADDR :: 0x1EC00000;
 OS_MMIO_PADDR :: 0x10100000;
-OS_MMIO_SIZE :: 0x400000;
+OS_MMIO_SIZE  :: 0x400000;
 
 OS_VRAM_VADDR :: 0x1F000000;
 OS_VRAM_PADDR :: 0x18000000;
-OS_VRAM_SIZE :: 0x600000;
+OS_VRAM_SIZE  :: 0x600000;
 
 OS_DSPRAM_VADDR :: 0x1FF00000;
 OS_DSPRAM_PADDR :: 0x1FF00000;
-OS_DSPRAM_SIZE :: 0x80000;
+OS_DSPRAM_SIZE  :: 0x80000;
 
 OS_KERNELCFG_VADDR :: 0x1FF80000;
 OS_SHAREDCFG_VADDR :: 0x1FF81000;
 
 OS_FCRAM_VADDR :: 0x30000000;
 OS_FCRAM_PADDR :: 0x20000000;
-OS_FCRAM_SIZE :: 0x10000000;
+OS_FCRAM_SIZE  :: 0x10000000;
 
+OS_KernelConfig :: cast(*osKernelConfig_s)OS_KERNELCFG_VADDR; ///< Pointer to the kernel configuration page (see \ref osKernelConfig_s)
 OS_SharedConfig :: cast(*osSharedConfig_s)OS_SHAREDCFG_VADDR;
 
-WRITE_DATA_TO_FAULTING_STACK :: cast(*ERRF_ExceptionData)1;
+RUN_HANDLER_ON_FAULTING_STACK :: cast(*void)1;
+WRITE_DATA_TO_HANDLER_STACK   :: null;
+WRITE_DATA_TO_FAULTING_STACK  :: cast(*ERRF_ExceptionData)1;
 
-GSP_SCREEN_TOP :: 0;
-GSP_SCREEN_BOTTOM :: 1;
-GSP_SCREEN_WIDTH :: 240;
-GSP_SCREEN_HEIGHT_TOP :: 400;
+GSP_SCREEN_TOP           :: 0;
+GSP_SCREEN_BOTTOM        :: 1;
+GSP_SCREEN_WIDTH         :: 240;
+GSP_SCREEN_HEIGHT_TOP    :: 400;
 GSP_SCREEN_HEIGHT_TOP_2X :: 800;
 GSP_SCREEN_HEIGHT_BOTTOM :: 320;
 
-CONSOLE_COLOR_BOLD :: 1<<0;
-CONSOLE_COLOR_FAINT :: 1<<1;
-CONSOLE_ITALIC :: 1<<2;
-CONSOLE_UNDERLINE :: 1<<3;
-CONSOLE_BLINK_SLOW :: 1<<4;
-CONSOLE_BLINK_FAST :: 1<<5;
+CONSOLE_COLOR_BOLD    :: 1<<0;
+CONSOLE_COLOR_FAINT   :: 1<<1;
+CONSOLE_ITALIC        :: 1<<2;
+CONSOLE_UNDERLINE     :: 1<<3;
+CONSOLE_BLINK_SLOW    :: 1<<4;
+CONSOLE_BLINK_FAST    :: 1<<5;
 CONSOLE_COLOR_REVERSE :: 1<<6;
-CONSOLE_CONCEAL :: 1<<7;
-CONSOLE_CROSSED_OUT :: 1<<8;
-CONSOLE_FG_CUSTOM :: 1<<9;
-CONSOLE_BG_CUSTOM :: 1<<10;
+CONSOLE_CONCEAL       :: 1<<7;
+CONSOLE_CROSSED_OUT   :: 1<<8;
+CONSOLE_FG_CUSTOM     :: 1<<9;
+CONSOLE_BG_CUSTOM     :: 1<<10;
 
 CSND_NUM_CHANNELS :: 32;
 
 FRIEND_SCREEN_NAME_SIZE :: 0xB;
-FRIEND_COMMENT_SIZE :: 0x21;
-FRIEND_LIST_SIZE :: 0x64;
+FRIEND_COMMENT_SIZE     :: 0x21;
+FRIEND_LIST_SIZE        :: 0x64;
 
 scanKeys :: hidScanInput;
 
@@ -266,25 +296,35 @@ UDS_DEFAULT_RECVBUFSIZE :: 0x2E30;
 
 UDS_DATAFRAME_MAXSIZE :: 0x5C6;
 
+/// Check whether a fatal udsSendTo error occured(some error(s) from udsSendTo() can be ignored, but the frame won't be sent when that happens).
+UDS_CHECK_SENDTO_FATALERROR :: inline (x: Result) -> bool {
+    return R_FAILED(x) && x != 0xC86113F0;
+}
+
 SOL_CONFIG :: 0xfffe;
 
 ROUTING_FLAG_G :: 0x01;
 
-TCP_STATE_CLOSED :: 1;
-TCP_STATE_LISTEN :: 2;
+TCP_STATE_CLOSED      :: 1;
+TCP_STATE_LISTEN      :: 2;
 TCP_STATE_ESTABLISHED :: 5;
-TCP_STATE_FINWAIT1 :: 6;
-TCP_STATE_FINWAIT2 :: 7;
-TCP_STATE_CLOSE_WAIT :: 8;
-TCP_STATE_LAST_ACK :: 9;
-TCP_STATE_TIME_WAIT :: 11;
+TCP_STATE_FINWAIT1    :: 6;
+TCP_STATE_FINWAIT2    :: 7;
+TCP_STATE_CLOSE_WAIT  :: 8;
+TCP_STATE_LAST_ACK    :: 9;
+TCP_STATE_TIME_WAIT   :: 11;
 
-MVD_STATUS_OK :: 0x17000;
-MVD_STATUS_PARAMSET :: 0x17001;
-MVD_STATUS_BUSY :: 0x17002;
-MVD_STATUS_FRAMEREADY :: 0x17003;
+MVD_STATUS_OK                   :: 0x17000;
+MVD_STATUS_PARAMSET             :: 0x17001;
+MVD_STATUS_BUSY                 :: 0x17002;
+MVD_STATUS_FRAMEREADY           :: 0x17003;
 MVD_STATUS_INCOMPLETEPROCESSING :: 0x17004;
-MVD_STATUS_NALUPROCFLAG :: 0x17007;
+MVD_STATUS_NALUPROCFLAG         :: 0x17007;
+
+///This can be used to check whether mvdstdProcessVideoFrame() was successful.
+MVD_CHECKNALUPROC_SUCCESS :: inline (x: u32) -> bool {
+    return x==MVD_STATUS_OK || x==MVD_STATUS_PARAMSET || x==MVD_STATUS_FRAMEREADY || x==MVD_STATUS_INCOMPLETEPROCESSING || x==MVD_STATUS_NALUPROCFLAG;
+}
 
 MVD_DEFAULT_WORKBUF_SIZE :: 0x9006C8;
 
@@ -1059,6 +1099,9 @@ MIISELECTOR_GUESTMII_NAME_LEN :: 12;
 
 ARCHIVE_DIRITER_MAGIC :: 0x68637261;
 
+/// Address of the host connected through 3dslink
+__3dslink_host: in_addr #elsewhere;
+
 LINK3DS_COMM_PORT :: 17491;
 
 POLLIN :: 0x01;
@@ -1145,6 +1188,7 @@ addrinfo :: struct {
     ai_next:      *addrinfo #align 4;
 }
 
+h_errno: s32 #elsewhere;
 gethostbyname :: (name: *u8) -> *hostent #foreign libctru;
 gethostbyaddr :: (addr: *void, len: socklen_t, type: s32) -> *hostent #foreign libctru;
 herror :: (s: *u8) -> void #foreign libctru;
@@ -1201,6 +1245,42 @@ FpuRegisters :: struct {
     fpscr: u32; ///< fpscr.
     fpexc: u32; ///< fpexc.
 }
+
+/// Checks whether a result code indicates success.
+R_SUCCEEDED :: inline (res: Result) -> bool {
+    return res>=0;
+}
+
+/// Checks whether a result code indicates failure.
+R_FAILED :: inline (res: Result) -> bool {
+    return res<0;
+}
+
+/// Returns the level of a result code.
+R_LEVEL :: inline (res: Result) -> RL {
+    return (res>>27)&0x1F;
+}
+
+/// Returns the summary of a result code.
+R_SUMMARY :: inline (res: Result) -> RS {
+    return (res>>21)&0x3F;
+}
+
+/// Returns the module ID of a result code.
+R_MODULE :: inline (res: Result) -> RM {
+    return (res>>10)&0xFF;
+}
+
+/// Returns the description of a result code.
+R_DESCRIPTION :: inline (res: Result) -> RD {
+    return res&0x3FF;
+}
+
+/// Builds a result code from its constituent components.
+MAKERESULT :: inline (level: RL, summary: RS, module: RM, description: RD) -> Result {
+    return ((level&0x1F)<<27) | ((summary&0x3F)<<21) | ((module&0xFF)<<10) | (description&0x3FF);
+}
+
 
 /// Result code level values.
 RL :: enum u8 {
@@ -1364,10 +1444,105 @@ RD :: enum u16 {
 }
 
 /// IPC buffer access rights.
-IPC_BufferRights :: enum u8 {
+IPC_BufferRights :: enum_flags u8 {
     R  :: 2;
     W  :: 4;
     RW :: 6;
+}
+
+/**
+ * @brief Creates a command header to be used for IPC
+ * @param command_id       ID of the command to create a header for.
+ * @param normal_params    Size of the normal parameters in words. Up to 63.
+ * @param translate_params Size of the translate parameters in words. Up to 63.
+ * @return The created IPC header.
+ *
+ * Normal parameters are sent directly to the process while the translate parameters might go through modifications and checks by the kernel.
+ * The translate parameters are described by headers generated with the IPC_Desc_* functions.
+ *
+ * @note While #normal_params is equivalent to the number of normal parameters, #translate_params includes the size occupied by the translate parameters headers.
+ */
+IPC_MakeHeader :: inline (command_id: u16, normal_params: u32, translate_params: u32) -> u32 {
+    return (cast(u32) command_id << 16) | ((cast(u32) normal_params & 0x3F) << 6) | ((cast(u32) translate_params & 0x3F) << 0);
+}
+
+/**
+ * @brief Creates a header to share handles
+ * @param number The number of handles following this header. Max 64.
+ * @return The created shared handles header.
+ *
+ * The #number next values are handles that will be shared between the two processes.
+ *
+ * @note Zero values will have no effect.
+ */
+IPC_Desc_SharedHandles :: inline (number: u32) -> u32 {
+    return (cast(u32)(number - 1) << 26);
+}
+
+/**
+ * @brief Creates the header to transfer handle ownership
+ * @param number The number of handles following this header. Max 64.
+ * @return The created handle transfer header.
+ *
+ * The #number next values are handles that will be duplicated and closed by the other process.
+ *
+ * @note Zero values will have no effect.
+ */
+IPC_Desc_MoveHandles :: inline (number: u32) -> u32 {
+    return (cast(u32)(number - 1) << 26) | 0x10;
+}
+
+/**
+ * @brief Returns the code to ask the kernel to fill the handle with the current process ID.
+ * @return The code to request the current process ID.
+ *
+ * The next value is a placeholder that will be replaced by the current process ID by the kernel.
+ */
+IPC_Desc_CurProcessId :: inline () -> u32 {
+    return 0x20;
+}
+
+IPC_Desc_CurProcessHandle :: inline () -> u32 #deprecated {
+    return IPC_Desc_CurProcessId();
+}
+
+/**
+ * @brief Creates a header describing a static buffer.
+ * @param size      Size of the buffer. Max ?0x03FFFF?.
+ * @param buffer_id The Id of the buffer. Max 0xF.
+ * @return The created static buffer header.
+ *
+ * The next value is a pointer to the buffer. It will be copied to TLS offset 0x180 + static_buffer_id*8.
+ */
+IPC_Desc_StaticBuffer :: inline (size: size_t, buffer_id: u32) -> u32 {
+    return (size << 14) | ((buffer_id & 0xF) << 10) | 0x2;
+}
+
+/**
+ * @brief Creates a header describing a buffer to be sent over PXI.
+ * @param size         Size of the buffer. Max 0x00FFFFFF.
+ * @param buffer_id    The Id of the buffer. Max 0xF.
+ * @param is_read_only true if the buffer is read-only. If false, the buffer is considered to have read-write access.
+ * @return The created PXI buffer header.
+ *
+ * The next value is a phys-address of a table located in the BASE memregion.
+ */
+IPC_Desc_PXIBuffer :: inline (size: size_t, buffer_id: u32, is_read_only: bool) -> u32 {
+    type: u8 = 0x4;
+    if is_read_only  type = 0x6;
+    return (size << 8) | ((buffer_id & 0xF) << 4) | type;
+}
+
+/**
+ * @brief Creates a header describing a buffer from the main memory.
+ * @param size   Size of the buffer. Max 0x0FFFFFFF.
+ * @param rights The rights of the buffer for the destination process.
+ * @return The created buffer header.
+ *
+ * The next value is a pointer to the buffer.
+ */
+IPC_Desc_Buffer :: inline (size: size_t, rights: IPC_BufferRights) -> u32 {
+    return (size << 4) | 0x8 | rights;
 }
 
 /**
@@ -1376,53 +1551,56 @@ IPC_BufferRights :: enum u8 {
 * The lowest 8 bits are the operation
 */
 MemOp :: enum u32 {
-    FREE          :: 1;
-    RESERVE       :: 2;
-    ALLOC         :: 3;
-    MAP           :: 4;
-    UNMAP         :: 5;
-    PROT          :: 6;
-    REGION_APP    :: 256;
-    REGION_SYSTEM :: 512;
-    REGION_BASE   :: 768;
-    OP_MASK       :: 255;
-    REGION_MASK   :: 3840;
-    LINEAR_FLAG   :: 65536;
-    ALLOC_LINEAR  :: 65539;
+    FREE          :: 1;     ///< Memory un-mapping
+    RESERVE       :: 2;     ///< Reserve memory
+    ALLOC         :: 3;     ///< Memory mapping
+    MAP           :: 4;     ///< Mirror mapping
+    UNMAP         :: 5;     ///< Mirror unmapping
+    PROT          :: 6;     ///< Change protection
+
+    REGION_APP    :: 256;   ///< APPLICATION memory region.
+    REGION_SYSTEM :: 512;   ///< SYSTEM memory region.
+    REGION_BASE   :: 768;   ///< BASE memory region.
+
+    OP_MASK       :: 255;   ///< Operation bitmask.
+    REGION_MASK   :: 3840;  ///< Region bitmask.
+    LINEAR_FLAG   :: 65536; ///< Flag for linear memory operations
+
+    ALLOC_LINEAR  :: LINEAR_FLAG | ALLOC; ///< Allocates linear memory.
 }
 
 /// The state of a memory block.
 MemState :: enum u8 {
-    FREE       :: 0;
-    RESERVED   :: 1;
-    IO         :: 2;
-    STATIC     :: 3;
-    CODE       :: 4;
-    PRIVATE    :: 5;
-    SHARED     :: 6;
-    CONTINUOUS :: 7;
-    ALIASED    :: 8;
-    ALIAS      :: 9;
-    ALIASCODE  :: 10;
-    LOCKED     :: 11;
+    FREE       :: 0;  ///< Free memory
+    RESERVED   :: 1;  ///< Reserved memory
+    IO         :: 2;  ///< I/O memory
+    STATIC     :: 3;  ///< Static memory
+    CODE       :: 4;  ///< Code memory
+    PRIVATE    :: 5;  ///< Private memory
+    SHARED     :: 6;  ///< Shared memory
+    CONTINUOUS :: 7;  ///< Continuous memory
+    ALIASED    :: 8;  ///< Aliased memory
+    ALIAS      :: 9;  ///< Alias memory
+    ALIASCODE  :: 10; ///< Aliased code memory
+    LOCKED     :: 11; ///< Locked memory
 }
 
 /// Memory permission flags
 MemPerm :: enum_flags u32 {
-    READ        :: 1;
-    WRITE       :: 2;
-    EXECUTE     :: 4;
-    READWRITE   :: 3;
-    READEXECUTE :: 5;
-    DONTCARE    :: 268435456;
+    READ        :: 1;              ///< Readable
+    WRITE       :: 2;              ///< Writable
+    EXECUTE     :: 4;              ///< Executable
+    READWRITE   :: READ | WRITE;   ///< Readable and writable
+    READEXECUTE :: READ | EXECUTE; ///< Readable and executable
+    DONTCARE    :: 268435456;      ///< Don't care
 }
 
 /// Memory regions.
 MemRegion :: enum u8 {
-    ALL         :: 0;
-    APPLICATION :: 1;
-    SYSTEM      :: 2;
-    BASE        :: 3;
+    ALL         :: 0; ///< All regions.
+    APPLICATION :: 1; ///< APPLICATION memory.
+    SYSTEM      :: 2; ///< SYSTEM memory.
+    BASE        :: 3; ///< BASE memory.
 }
 
 /// Memory information.
@@ -1837,6 +2015,64 @@ StartupInfo :: struct {
     argv:       *u16 #align 4; ///< Unused on retail kernel.
     envp:       *u16; ///< Unused on retail kernel.
 }
+
+/**
+ * @brief Gets the thread local storage buffer.
+ * @return The thread local storage bufger.
+ */
+// @TODO: Need inline assembly support!
+// getThreadLocalStorage :: inline () -> *void {
+//     #asm {
+//         mrc p15, 0, data:, c13, c0, 3;
+//     }
+//     return data;
+// }
+
+// /**
+//  * @brief Gets the thread command buffer.
+//  * @return The thread command bufger.
+//  */
+// getThreadCommandBuffer :: inline () -> *u32 {
+//     return (u32*)((u8*)getThreadLocalStorage() + 0x80);
+// }
+
+// /**
+//  * @brief Gets the thread static buffer.
+//  * @return The thread static bufger.
+//  */
+// getThreadStaticBuffers :: inline () -> *u32 {
+//     return (u32*)((u8*)getThreadLocalStorage() + 0x180);
+// }
+
+///@name Device drivers
+///@{
+
+/// Writes the default DMA device config that the kernel uses when DMACFG_*_IS_DEVICE and DMACFG_*_USE_CFG are not set
+dmaDeviceConfigInitDefault :: inline (cfg: *DmaDeviceConfig) {
+    // Kernel uses this default instance if _IS_DEVICE and _USE_CFG are not set
+    <<cfg = .{
+        .deviceId          = -1,
+        .allowedAlignments = 8 | 4 | 2 | 1,
+        .burstSize         = 0x80,
+        .transferSize      = 0,
+        .burstStride       = 0x80,
+        .transferStride    = 0,
+    };
+}
+
+/// Initializes a \ref DmaConfig instance with sane defaults for RAM<>RAM tranfers
+dmaConfigInitDefault :: inline (cfg: *DmaConfig) {
+    <<cfg = .{
+        .channelId      = -1,
+        .endianSwapSize = 0,
+        .flags          = DMACFG.WAIT_AVAILABLE,
+        ._padding       = 0,
+        .srcCfg         = .{},
+        .dstCfg         = .{},
+    };
+}
+
+///@}
 
 ///@name Memory management
 ///@{
@@ -2549,11 +2785,11 @@ svcOutputDebugString :: (str: *u8, length: s32) -> Result #foreign libctru;
 * @param param1 First parameter.
 * @param param2 Second parameter.
 * @details The operations are the following:
-*     - \ref PERFCOUNTEROP_ENABLE (void) -> void, tries to enable and lock perfmon. functionality.
-*     - \ref PERFCOUNTEROP_DISABLE (void) -> void, disable and forcibly unlocks perfmon. functionality.
+*     - \ref PERFCOUNTEROP_ENABLE () -> void, tries to enable and lock perfmon. functionality.
+*     - \ref PERFCOUNTEROP_DISABLE () -> void, disable and forcibly unlocks perfmon. functionality.
 *     - \ref PERFCOUNTEROP_GET_VALUE (\ref PerfCounterRegister reg) -> u64, gets the value of a particular counter register.
 *     - \ref PERFCOUNTEROP_SET_VALUE (\ref PerfCounterRegister reg, u64 value) -> void, sets the value of a particular counter register.
-*     - \ref PERFCOUNTEROP_GET_OVERFLOW_FLAGS (void) -> u32, gets the overflow flags of all CP15 and SCU registers.
+*     - \ref PERFCOUNTEROP_GET_OVERFLOW_FLAGS () -> u32, gets the overflow flags of all CP15 and SCU registers.
 *         - Format is a bitfield of \ref PerfCounterRegister.
 *     - \ref PERFCOUNTEROP_RESET (u32 valueResetMask, u32 overflowFlagResetMask) -> void, resets the value and/or
 *     overflow flags of selected registers.
@@ -2668,6 +2904,10 @@ svcGetDebugThreadParam :: (unused: *s64, out: *u32, debug: Handle, threadId: u32
 * @param callback Function to execute.
 */
 svcBackdoor :: (callback: #type () -> s32 #c_call) -> Result #foreign libctru;
+
+// @TODO: Inline assembly
+/// Stop point, does nothing if the process is not attached (as opposed to 'bkpt' instructions)
+// #define SVC_STOP_POINT __asm__ volatile("svc 0xFF");
 
 /// ARM9 descriptor flags
 ARM9DESC :: enum_flags u16 {
@@ -2959,7 +3199,7 @@ srvPublishToSubscriber :: (notificationId: u32, flags: u32) -> Result #foreign l
 /**
 * @brief Publishes a notification to subscribers and retrieves a list of all processes that were notified.
 * @param processIdCountOut Pointer to output the number of process IDs to.
-* @param processIdsOut Pointer to output the process IDs to. Should have size "60 * sizeof(u32)".
+* @param processIdsOut Pointer to output the process IDs to. Should have size "60 * sizeofcast(u32)".
 * @param notificationId ID of the notification.
 */
 srvPublishAndGetSubscriber :: (processIdCountOut: *u32, processIdsOut: *u32, notificationId: u32) -> Result #foreign libctru;
@@ -3045,7 +3285,7 @@ errfGetSessionHandle :: () -> *Handle #foreign libctru;
 * After performing this, the system may panic and need to be rebooted. Extra information will be displayed on the
 * top screen with a developer console or the proper patches in a CFW applied.
 *
-* The error may not be shown and execution aborted until errfExit(void) is called.
+* The error may not be shown and execution aborted until errfExit() is called.
 *
 * You may wish to use ERRF_ThrowResult() or ERRF_ThrowResultWithMessage() instead of
 * constructing the ERRF_FatalErrInfo struct yourself.
@@ -3187,6 +3427,73 @@ osConvertOldLINEARMemToNew :: (vaddr: *void) -> *void #foreign libctru;
 osStrError :: (error: Result) -> *u8 #foreign libctru;
 
 /**
+ * @brief Gets the system's FIRM version.
+ * @return The system's FIRM version.
+ *
+ * This can be used to compare system versions easily with @ref SYSTEM_VERSION.
+ */
+osGetFirmVersion :: inline () -> u32 {
+    return OS_KernelConfig.firm_ver & ~0xFF;
+}
+
+/**
+ * @brief Gets the system's kernel version.
+ * @return The system's kernel version.
+ *
+ * This can be used to compare system versions easily with @ref SYSTEM_VERSION.
+ *
+ * @code
+ * if(osGetKernelVersion() > SYSTEM_VERSION(2,46,0)) printf("You are running 9.0 or higher\n");
+ * @endcode
+ */
+osGetKernelVersion :: inline () -> u32 {
+    return OS_KernelConfig.kernel_ver & ~0xFF;
+}
+
+/// Gets the system's "core version" (2 on NATIVE_FIRM, 3 on SAFE_FIRM, etc.)
+osGetSystemCoreVersion :: inline () -> u32 {
+    return OS_KernelConfig.kernel_syscore_ver;
+}
+
+/// Gets the system's memory layout ID (0-5 on Old 3DS, 6-8 on New 3DS)
+osGetApplicationMemType :: inline () -> u32 {
+    return OS_KernelConfig.app_memtype;
+}
+
+/**
+ * @brief Gets the size of the specified memory region.
+ * @param region Memory region to check.
+ * @return The size of the memory region, in bytes.
+ */
+osGetMemRegionSize :: inline (region: MemRegion) -> u32 {
+    if region == .ALL {
+        return osGetMemRegionSize(.APPLICATION) + osGetMemRegionSize(.SYSTEM) + osGetMemRegionSize(.BASE);
+    } else {
+        return OS_KernelConfig.memregion_sz[region-1];
+    }
+}
+
+/**
+ * @brief Gets the number of used bytes within the specified memory region.
+ * @param region Memory region to check.
+ * @return The number of used bytes of memory.
+ */
+osGetMemRegionUsed :: inline (region: MemRegion) -> u32 {
+    mem_used: s64;
+    svcGetSystemInfo(*mem_used, 0, region);
+    return mem_used;
+}
+
+/**
+ * @brief Gets the number of free bytes within the specified memory region.
+ * @param region Memory region to check.
+ * @return The number of free bytes of memory.
+ */
+osGetMemRegionFree :: inline (region: MemRegion) -> u32 {
+    return osGetMemRegionSize(region) - osGetMemRegionUsed(region);
+}
+
+/**
 * @brief Reads the latest reference timepoint published by PTM.
 * @return Structure (see \ref osTimeRef_s).
 */
@@ -3204,6 +3511,59 @@ osGetTime :: () -> u64 #foreign libctru;
 * @return The number of milliseconds elapsed.
 */
 osTickCounterRead :: (cnt: *TickCounter) -> float64 #foreign libctru;
+
+/**
+ * @brief Starts a tick counter.
+ * @param cnt The tick counter.
+ */
+osTickCounterStart :: inline (cnt: *TickCounter) {
+    cnt.reference = svcGetSystemTick();
+}
+
+/**
+ * @brief Updates the elapsed time in a tick counter.
+ * @param cnt The tick counter.
+ */
+osTickCounterUpdate :: inline (cnt: *TickCounter) {
+    now := svcGetSystemTick();
+    cnt.elapsed = now - cnt.reference;
+    cnt.reference = now;
+}
+
+/**
+ * @brief Gets the current Wifi signal strength.
+ * @return The current Wifi signal strength.
+ *
+ * Valid values are 0-3:
+ * - 0 means the signal strength is terrible or the 3DS is disconnected from
+ *   all networks.
+ * - 1 means the signal strength is bad.
+ * - 2 means the signal strength is decent.
+ * - 3 means the signal strength is good.
+ *
+ * Values outside the range of 0-3 should never be returned.
+ *
+ * These values correspond with the number of wifi bars displayed by Home Menu.
+ */
+osGetWifiStrength :: inline () -> u8 {
+    return OS_SharedConfig.wifi_strength;
+}
+
+/**
+ * @brief Gets the state of the 3D slider.
+ * @return The state of the 3D slider (0.0~1.0)
+ */
+osGet3DSliderState :: inline () -> float {
+    return OS_SharedConfig.slider_3d;
+}
+
+/**
+ * @brief Checks whether a headset is connected.
+ * @return true or false.
+ */
+osIsHeadsetConnected :: inline () -> bool {
+    return OS_SharedConfig.headset_connected != 0;
+}
 
 /**
 * @brief Configures the New 3DS speedup.
@@ -3250,6 +3610,120 @@ LightSemaphore :: struct {
     num_threads_acq: s16; ///< Number of threads concurrently acquiring the semaphore
     max_count:       s16; ///< The maximum release count of the semaphore
 }
+
+// @TODO: Inline assembly
+
+// /// Performs a Data Synchronization Barrier operation.
+// __dsb :: inline () {
+//     #asm {"mcr p15, 0, %[val], c7, c10, 4" :: [val] "r" (0) : "memory" };
+// }
+
+// /// Performs a Data Memory Barrier operation.
+// __dmb :: inline () {
+//     #asm {"mcr p15, 0, %[val], c7, c10, 5" :: [val] "r" (0) : "memory" };
+// }
+
+// /// Performs a clrex operation.
+// __clrex :: inline () {
+//     #asm {"clrex" ::: "memory" };
+// }
+
+// /**
+//  * @brief Performs a ldrex operation.
+//  * @param addr Address to perform the operation on.
+//  * @return The resulting value.
+//  */
+// __ldrex :: inline (addr: *s32) -> s32 {
+//     s32 val;
+//     #asm {"ldrex %[val], %[addr]" : [val] "=r" (val) : [addr] "Q" (*addr) };
+//     return val;
+// }
+
+// /**
+//  * @brief Performs a strex operation.
+//  * @param addr Address to perform the operation on.
+//  * @param val Value to store.
+//  * @return Whether the operation was successful.
+//  */
+// __strex :: inline (addr: *s32, val: s32) -> bool {
+//     bool res;
+//     #asm {"strex %[res], %[val], %[addr]" : [res] "=&r" (res) : [val] "r" (val), [addr] "Q" (*addr) };
+//     return res;
+// }
+
+// /**
+//  * @brief Performs a ldrexh operation.
+//  * @param addr Address to perform the operation on.
+//  * @return The resulting value.
+//  */
+// __ldrexh :: inline (addr: *u16) -> u16 {
+//     u16 val;
+//     #asm {"ldrexh %[val], %[addr]" : [val] "=r" (val) : [addr] "Q" (*addr) };
+//     return val;
+// }
+
+// /**
+//  * @brief Performs a strexh operation.
+//  * @param addr Address to perform the operation on.
+//  * @param val Value to store.
+//  * @return Whether the operation was successful.
+//  */
+// __strexh :: inline (addr: *u16, val: u16) -> bool {
+//     bool res;
+//     #asm {"strexh %[res], %[val], %[addr]" : [res] "=&r" (res) : [val] "r" (val), [addr] "Q" (*addr) };
+//     return res;
+// }
+
+// /**
+//  * @brief Performs a ldrexb operation.
+//  * @param addr Address to perform the operation on.
+//  * @return The resulting value.
+//  */
+// __ldrexb :: inline (addr: *u8) -> u8 {
+//     u8 val;
+//     #asm {"ldrexb %[val], %[addr]" : [val] "=r" (val) : [addr] "Q" (*addr) };
+//     return val;
+// }
+
+// /**
+//  * @brief Performs a strexb operation.
+//  * @param addr Address to perform the operation on.
+//  * @param val Value to store.
+//  * @return Whether the operation was successful.
+//  */
+// __strexb :: inline (addr: *u8, val: *u8) -> bool {
+//     bool res;
+//     #asm {"strexb %[res], %[val], %[addr]" : [res] "=&r" (res) : [val] "r" (val), [addr] "Q" (*addr) };
+//     return res;
+// }
+
+// @TODO: Need atomics
+/*
+/// Performs an atomic pre-increment operation.
+AtomicIncrement :: inline (ptr: *u32) -> u32 {
+    return __atomic_add_fetch(ptr: *u32, 1, __ATOMIC_SEQ_CST);
+}
+
+/// Performs an atomic pre-decrement operation.
+AtomicDecrement :: inline (ptr: *u32) -> u32 {
+    return __atomic_sub_fetch(ptr: *u32, 1, __ATOMIC_SEQ_CST);
+}
+
+/// Performs an atomic post-increment operation.
+AtomicPostIncrement :: inline (ptr: *u32) -> u32 {
+    return __atomic_fetch_add(ptr: *u32, 1, __ATOMIC_SEQ_CST);
+}
+
+/// Performs an atomic post-decrement operation.
+AtomicPostDecrement :: inline (ptr: *u32) -> u32 {
+    return __atomic_fetch_sub(ptr: *u32, 1, __ATOMIC_SEQ_CST);
+}
+
+/// Performs an atomic swap operation.
+AtomicSwap :: inline (ptr: *u32, value: u32) -> u32 {
+    return __atomic_exchange_n(ptr, value, __ATOMIC_SEQ_CST);
+}
+*/
 
 /**
 * @brief Function used to implement user-mode synchronization primitives.
@@ -3365,6 +3839,22 @@ CondVar_WaitTimeout :: (cv: *CondVar, lock: *LightLock, timeout_ns: s64) -> s32 
 * @param num_threads Maximum number of threads to wake up (or \ref ARBITRATION_SIGNAL_ALL to wake them all).
 */
 CondVar_WakeUp :: (cv: *CondVar, num_threads: s32) -> void #foreign libctru;
+
+/**
+ * @brief Wakes up a single thread waiting on a condition variable.
+ * @param cv Pointer to the condition variable.
+ */
+CondVar_Signal :: inline (cv: CondVar) {
+    CondVar_WakeUp(cv, 1);
+}
+
+/**
+ * @brief Wakes up all threads waiting on a condition variable.
+ * @param cv Pointer to the condition variable.
+ */
+CondVar_Broadcast :: inline (cv: CondVar) {
+    CondVar_WakeUp(cv, ARBITRATION_SIGNAL_ALL);
+}
 
 /**
 * @brief Initializes a light event.
@@ -3521,6 +4011,29 @@ threadGetCurrent :: () -> Thread #foreign libctru;
 */
 threadExit :: (rc: s32) -> void #foreign libctru;
 
+/**
+ * @brief Sets the exception handler for the current thread. Called from the main thread, this sets the default handler.
+ * @param handler The exception handler, necessarily an ARM function that does not return
+ * @param stack_top A pointer to the top of the stack that will be used by the handler. See also @ref RUN_HANDLER_ON_FAULTING_STACK
+ * @param exception_data A pointer to the buffer that will contain the exception data.
+                         See also @ref WRITE_DATA_TO_HANDLER_STACK and @ref WRITE_DATA_TO_FAULTING_STACK
+ *
+ * To have CPU exceptions reported through this mechanism, it is normally necessary that UNITINFO is set to a non-zero value when Kernel11 starts,
+ * and this mechanism is also controlled by @ref svcKernelSetState type 6, see 3dbrew.
+ *
+ * VFP exceptions are always reported this way even if the process is being debugged using the debug SVCs.
+ *
+ * The current thread need not be a libctru thread.
+ */
+// @TODO: See getThreadLocalStorage
+// threadOnException :: inline (handler: ExceptionHandler, stack_top: *void, exception_data: *ERRF_ExceptionData) {
+//     tls := cast(*u8)getThreadLocalStorage();
+
+//     <<cast(*u32)(tls + 0x40) = cast(u32)handler;
+//     <<cast(*u32)(tls + 0x44) = cast(u32)stack_top;
+//     <<cast(*u32)(tls + 0x48) = cast(u32)exception_data;
+// }
+
 /// Framebuffer information.
 GSPGPU_FramebufferInfo :: struct {
     active_framebuf:        u32; ///< Active framebuffer. (0 = first, 1 = second)
@@ -3564,6 +4077,26 @@ GSPGPU_Event :: enum u8 {
     P3D     :: 5;
     DMA     :: 6;
     MAX     :: 7;
+}
+
+/**
+ * @brief Gets the number of bytes per pixel for the specified format.
+ * @param format See \ref GSPGPU_FramebufferFormat.
+ * @return Bytes per pixel.
+ */
+gspGetBytesPerPixel :: inline (format: GSPGPU_FramebufferFormat) -> u32
+{
+    if format == {
+        case .RGBA8_OES;
+            return 4;
+        case;
+        case .BGR8_OES;
+            return 3;
+        case .RGB565_OES;
+        case .RGB5_A1_OES;
+        case .RGBA4_OES;
+            return 2;
+    }
 }
 
 /// Initializes GSPGPU.
@@ -3752,10 +4285,20 @@ GSPGPU_TriggerCmdReqQueue :: () -> Result #foreign libctru;
 */
 GSPGPU_SetLedForceOff :: (disable: bool) -> Result #foreign libctru;
 
+/// Converts red, green, and blue components to packed RGB565.
+RGB565 :: inline (r: u8, g: u8, b: u8) -> u16 {
+    return (b&0x1f)|((g&0x3f)<<5)|((r&0x1f)<<11);
+}
+
+/// Converts packed RGB8 to packed RGB565.
+RGB8_to_565 :: inline (r: u8, g: u8, b: u8) -> u16 {
+    return ((b>>3)&0x1f)|(((g>>2)&0x3f)<<5)|(((r>>3)&0x1f)<<11);
+}
+
 /// Screen IDs.
 gfxScreen_t :: enum u8 {
-    TOP    :: 0;
-    BOTTOM :: 1;
+    TOP    :: 0; ///< Top screen
+    BOTTOM :: 1; ///< Bottom screen
 }
 
 /**
@@ -3765,8 +4308,8 @@ gfxScreen_t :: enum u8 {
 * In any other case, use \ref GFX_LEFT.
 */
 gfx3dSide_t :: enum u8 {
-    LEFT  :: 0;
-    RIGHT :: 1;
+    LEFT  :: 0; ///< Left eye framebuffer
+    RIGHT :: 1; ///< Right eye framebuffer
 }
 
 /**
@@ -3895,6 +4438,16 @@ gfxSwapBuffers :: () -> void #foreign libctru;
 /// Same as \ref gfxSwapBuffers (formerly different).
 gfxSwapBuffersGpu :: () -> void #foreign libctru;
 
+CONSOLE_RESET   :: "\x1b[0m";
+CONSOLE_BLACK   :: "\x1b[30m";
+CONSOLE_RED     :: "\x1b[31;1m";
+CONSOLE_GREEN   :: "\x1b[32;1m";
+CONSOLE_YELLOW  :: "\x1b[33;1m";
+CONSOLE_BLUE    :: "\x1b[34;1m";
+CONSOLE_MAGENTA :: "\x1b[35;1m";
+CONSOLE_CYAN    :: "\x1b[36;1m";
+CONSOLE_WHITE   :: "\x1b[37;1m";
+
 /// A callback for printing a character.
 ConsolePrint :: #type (con: *void, c: s32) -> bool #c_call;
 
@@ -4018,11 +4571,65 @@ RUNFLAG :: enum_flags u8 {
 }
 
 /**
+ * @brief Gets whether the application was launched from a homebrew environment.
+ * @return Whether the application was launched from a homebrew environment.
+ */
+envIsHomebrew :: inline () -> bool {
+    __service_ptr: *void #elsewhere;
+    return __service_ptr != null;
+}
+
+/**
 * @brief Retrieves a handle from the environment handle list.
 * @param name Name of the handle.
 * @return The retrieved handle.
 */
 envGetHandle :: (name: *u8) -> Handle #foreign libctru;
+
+/**
+ * @brief Gets the environment-recommended app ID to use with APT.
+ * @return The APT app ID.
+ */
+envGetAptAppId :: inline () -> u32 {
+    __apt_appid: u32 #elsewhere;
+    return __apt_appid;
+}
+
+/**
+ * @brief Gets the size of the application heap.
+ * @return The application heap size.
+ */
+envGetHeapSize :: inline () -> u32 {
+    __ctru_heap_size: u32 #elsewhere;
+    return __ctru_heap_size;
+}
+
+/**
+ * @brief Gets the size of the linear heap.
+ * @return The linear heap size.
+ */
+envGetLinearHeapSize :: inline () -> u32 {
+    __ctru_linear_heap_size: u32 #elsewhere;
+    return __ctru_linear_heap_size;
+}
+
+/**
+ * @brief Gets the environment argument list.
+ * @return The argument list.
+ */
+envGetSystemArgList :: inline () -> *u8 {
+    __system_arglist: *u8 #elsewhere;
+    return __system_arglist;
+}
+
+/**
+ * @brief Gets the environment run flags.
+ * @return The run flags.
+ */
+envGetSystemRunFlags :: inline () -> u32 {
+    __system_runflags: u32 #elsewhere;
+    return __system_runflags;
+}
 
 /** @brief Compression types */
 decompressType :: enum u8 {
@@ -4093,6 +4700,24 @@ decompressHeader :: (type: *decompressType, size: *size_t, callback: decompressC
 */
 decompressV :: (iov: *decompressIOVec, iovcnt: size_t, callback: decompressCallback, userdata: *void, insize: size_t) -> bool #foreign libctru;
 
+/** @brief Decompress data
+ *  @param[in] output   Output buffer
+ *  @param[in] size     Output size limit
+ *  @param[in] callback Data callback (see decompressV())
+ *  @param[in] userdata User data passed to callback (see decompressV())
+ *  @param[in] insize   Size of userdata (see decompressV())
+ *  @returns Whether succeeded
+ */
+decompress :: inline (output: *void, size: size_t, callback: decompressCallback,
+                      userdata: *void, insize: size_t) -> bool
+{
+    iov: decompressIOVec;
+    iov.data = output;
+    iov.size = size;
+
+    return decompressV(*iov, 1, callback, userdata, insize);
+}
+
 /** @brief Decompress LZSS/LZ10
 *  @param[in] iov      Output vector
 *  @param[in] iovcnt   Number of buffers
@@ -4103,6 +4728,24 @@ decompressV :: (iov: *decompressIOVec, iovcnt: size_t, callback: decompressCallb
 */
 decompressV_LZSS :: (iov: *decompressIOVec, iovcnt: size_t, callback: decompressCallback, userdata: *void, insize: size_t) -> bool #foreign libctru;
 
+/** @brief Decompress LZSS/LZ10
+ *  @param[in] output   Output buffer
+ *  @param[in] size     Output size limit
+ *  @param[in] callback Data callback (see decompressV())
+ *  @param[in] userdata User data passed to callback (see decompressV())
+ *  @param[in] insize   Size of userdata (see decompressV())
+ *  @returns Whether succeeded
+ */
+decompress_LZSS :: inline (output: *void, size: size_t, callback: *decompressCallback,
+                userdata: *void, insize: size_t) -> bool
+{
+    iov: *decompressIOVec;
+    iov.data = output;
+    iov.size = size;
+
+    return decompressV_LZSS(*iov, 1, callback, userdata, insize);
+}
+
 /** @brief Decompress LZ11
 *  @param[in] iov      Output vector
 *  @param[in] iovcnt   Number of buffers
@@ -4112,6 +4755,24 @@ decompressV_LZSS :: (iov: *decompressIOVec, iovcnt: size_t, callback: decompress
 *  @returns Whether succeeded
 */
 decompressV_LZ11 :: (iov: *decompressIOVec, iovcnt: size_t, callback: decompressCallback, userdata: *void, insize: size_t) -> bool #foreign libctru;
+
+/** @brief Decompress LZ11
+ *  @param[in] output   Output buffer
+ *  @param[in] size     Output size limit
+ *  @param[in] callback Data callback (see decompressV())
+ *  @param[in] userdata User data passed to callback (see decompressV())
+ *  @param[in] insize   Size of userdata (see decompressV())
+ *  @returns Whether succeeded
+ */
+decompress_LZ11 :: inline (output: *void, size: size_t, callback: decompressCallback,
+                           userdata: *void, insize: size_t) -> bool
+{
+    iov: decompressIOVec;
+    iov.data = output;
+    iov.size = size;
+
+    return decompressV_LZ11(*iov, 1, callback, userdata, insize);
+}
 
 /** @brief Decompress Huffman
 *  @param[in] bits     Data size in bits (usually 4 or 8)
@@ -4124,6 +4785,25 @@ decompressV_LZ11 :: (iov: *decompressIOVec, iovcnt: size_t, callback: decompress
 */
 decompressV_Huff :: (bits: size_t, iov: *decompressIOVec, iovcnt: size_t, callback: decompressCallback, userdata: *void, insize: size_t) -> bool #foreign libctru;
 
+/** @brief Decompress Huffman
+ *  @param[in] bits     Data size in bits (usually 4 or 8)
+ *  @param[in] output   Output buffer
+ *  @param[in] size     Output size limit
+ *  @param[in] callback Data callback (see decompressV())
+ *  @param[in] userdata User data passed to callback (see decompressV())
+ *  @param[in] insize   Size of userdata (see decompressV())
+ *  @returns Whether succeeded
+ */
+decompress_Huff :: inline (bits: size_t, output: *void, size: size_t,
+                           callback: decompressCallback, userdata: *void, insize: size_t) -> bool
+{
+    iov: decompressIOVec;
+    iov.data = output;
+    iov.size = size;
+
+    return decompressV_Huff(bits, *iov, 1, callback, userdata, insize);
+}
+
 /** @brief Decompress run-length encoding
 *  @param[in] iov      Output vector
 *  @param[in] iovcnt   Number of buffers
@@ -4133,6 +4813,24 @@ decompressV_Huff :: (bits: size_t, iov: *decompressIOVec, iovcnt: size_t, callba
 *  @returns Whether succeeded
 */
 decompressV_RLE :: (iov: *decompressIOVec, iovcnt: size_t, callback: decompressCallback, userdata: *void, insize: size_t) -> bool #foreign libctru;
+
+/** @brief Decompress run-length encoding
+ *  @param[in] output   Output buffer
+ *  @param[in] size     Output size limit
+ *  @param[in] callback Data callback (see decompressV())
+ *  @param[in] userdata User data passed to callback (see decompressV())
+ *  @param[in] insize   Size of userdata (see decompressV())
+ *  @returns Whether succeeded
+ */
+decompress_RLE :: inline (output: *void, size: size_t, callback: decompressCallback,
+                          userdata: *void, insize: size_t) -> bool
+{
+  iov: decompressIOVec;
+  iov.data = output;
+  iov.size = size;
+
+  return decompressV_RLE(*iov, 1, callback, userdata, insize);
+}
 
 /** Convert a UTF-8 sequence into a UTF-32 codepoint
 *
@@ -4535,108 +5233,108 @@ ACU_ConnectAsync :: (config: *acuConfig, connectionHandle: Handle) -> Result #fo
 
 /// Open flags.
 FS_OPEN :: enum_flags u8 {
-    READ   :: 1;
-    WRITE  :: 2;
-    CREATE :: 4;
+    READ   :: 1; ///< Open for reading.
+    WRITE  :: 2; ///< Open for writing.
+    CREATE :: 4; ///< Create file.
 }
 
 /// Write flags.
 FS_WRITE :: enum_flags u16 {
-    FLUSH       :: 1;
-    UPDATE_TIME :: 256;
+    FLUSH       :: 1;   ///< Flush.
+    UPDATE_TIME :: 256; ///< Update file timestamp.
 }
 
 /// Attribute flags.
 FS_ATTRIBUTE :: enum_flags u32 {
-    DIRECTORY :: 1;
-    HIDDEN    :: 256;
-    ARCHIVE   :: 65536;
-    READ_ONLY :: 16777216;
+    DIRECTORY :: 1;        ///< Directory.
+    HIDDEN    :: 256;      ///< Hidden.
+    ARCHIVE   :: 65536;    ///< Archive.
+    READ_ONLY :: 16777216; ///< Read-only.
 }
 
 /// Media types.
 FS_MediaType :: enum u8 {
-    NAND      :: 0;
-    SD        :: 1;
-    GAME_CARD :: 2;
+    NAND      :: 0; ///< NAND.
+    SD        :: 1; ///< SD card.
+    GAME_CARD :: 2; ///< Game card.
 }
 
 /// System media types.
 FS_SystemMediaType :: enum u8 {
-    CTR_NAND  :: 0;
-    TWL_NAND  :: 1;
-    SD        :: 2;
-    TWL_PHOTO :: 3;
+    CTR_NAND  :: 0; ///< CTR NAND.
+    TWL_NAND  :: 1; ///< TWL NAND.
+    SD        :: 2; ///< SD card.
+    TWL_PHOTO :: 3; ///< TWL Photo.
 }
 
 /// Archive IDs.
 FS_ArchiveID :: enum u32 {
-    ROMFS                    :: 3;
-    SAVEDATA                 :: 4;
-    EXTDATA                  :: 6;
-    SHARED_EXTDATA           :: 7;
-    SYSTEM_SAVEDATA          :: 8;
-    SDMC                     :: 9;
-    SDMC_WRITE_ONLY          :: 10;
-    BOSS_EXTDATA             :: 305419896;
-    CARD_SPIFS               :: 305419897;
-    EXTDATA_AND_BOSS_EXTDATA :: 305419899;
-    SYSTEM_SAVEDATA2         :: 305419900;
-    NAND_RW                  :: 305419901;
-    NAND_RO                  :: 305419902;
-    NAND_RO_WRITE_ACCESS     :: 305419903;
-    SAVEDATA_AND_CONTENT     :: 591751050;
-    SAVEDATA_AND_CONTENT2    :: 591751054;
-    NAND_CTR_FS              :: 1450741931;
-    TWL_PHOTO                :: 1450741932;
-    TWL_SOUND                :: 1450741933;
-    NAND_TWL_FS              :: 1450741934;
-    NAND_W_FS                :: 1450741935;
-    GAMECARD_SAVEDATA        :: 1450741937;
-    USER_SAVEDATA            :: 1450741938;
-    DEMO_SAVEDATA            :: 1450741940;
+    ROMFS                    :: 0x00000003; ///< RomFS archive.
+    SAVEDATA                 :: 0x00000004; ///< Save data archive.
+    EXTDATA                  :: 0x00000006; ///< Ext data archive.
+    SHARED_EXTDATA           :: 0x00000007; ///< Shared ext data archive.
+    SYSTEM_SAVEDATA          :: 0x00000008; ///< System save data archive.
+    SDMC                     :: 0x00000009; ///< SDMC archive.
+    SDMC_WRITE_ONLY          :: 0x0000000A; ///< Write-only SDMC archive.
+    BOSS_EXTDATA             :: 0x12345678; ///< BOSS ext data archive.
+    CARD_SPIFS               :: 0x12345679; ///< Card SPI FS archive.
+    EXTDATA_AND_BOSS_EXTDATA :: 0x1234567B; ///< Ext data and BOSS ext data archive.
+    SYSTEM_SAVEDATA2         :: 0x1234567C; ///< System save data archive.
+    NAND_RW                  :: 0x1234567D; ///< Read-write NAND archive.
+    NAND_RO                  :: 0x1234567E; ///< Read-only NAND archive.
+    NAND_RO_WRITE_ACCESS     :: 0x1234567F; ///< Read-only write access NAND archive.
+    SAVEDATA_AND_CONTENT     :: 0x2345678A; ///< User save data and ExeFS/RomFS archive.
+    SAVEDATA_AND_CONTENT2    :: 0x2345678E; ///< User save data and ExeFS/RomFS archive (only ExeFS for fs:LDR).
+    NAND_CTR_FS              :: 0x567890AB; ///< NAND CTR FS archive.
+    TWL_PHOTO                :: 0x567890AC; ///< TWL PHOTO archive.
+    TWL_SOUND                :: 0x567890AD; ///< TWL SOUND archive.
+    NAND_TWL_FS              :: 0x567890AE; ///< NAND TWL FS archive.
+    NAND_W_FS                :: 0x567890AF; ///< NAND W FS archive.
+    GAMECARD_SAVEDATA        :: 0x567890B1; ///< Game card save data archive.
+    USER_SAVEDATA            :: 0x567890B2; ///< User save data archive.
+    DEMO_SAVEDATA            :: 0x567890B4; ///< Demo save data archive.
 }
 
 /// Path types.
 FS_PathType :: enum u8 {
-    INVALID :: 0;
-    EMPTY   :: 1;
-    BINARY  :: 2;
-    ASCII   :: 3;
-    UTF16   :: 4;
+    INVALID :: 0; ///< Invalid path.
+    EMPTY   :: 1; ///< Empty path.
+    BINARY  :: 2; ///< Binary path. Meaning is per-archive.
+    ASCII   :: 3; ///< ASCII text path.
+    UTF16   :: 4; ///< UTF-16 text path.
 }
 
 /// Secure value slot.
 FS_SecureValueSlot :: enum u16 {
-    SECUREVALUE_SLOT_SD :: 4096;
+    SECUREVALUE_SLOT_SD :: 4096; ///< SD application.
 }
 
 /// Card SPI baud rate.
 FS_CardSpiBaudRate :: enum u8 {
-    _512KHZ :: 0;
-    _1MHZ   :: 1;
-    _2MHZ   :: 2;
-    _4MHZ   :: 3;
-    _8MHZ   :: 4;
-    _16MHZ  :: 5;
+    _512KHZ :: 0; ///< 512KHz.
+    _1MHZ   :: 1; ///< 1MHz.
+    _2MHZ   :: 2; ///< 2MHz.
+    _4MHZ   :: 3; ///< 4MHz.
+    _8MHZ   :: 4; ///< 8MHz.
+    _16MHZ  :: 5; ///< 16MHz.
 }
 
 /// Card SPI bus mode.
 FS_CardSpiBusMode :: enum u8 {
-    _1BIT :: 0;
-    _4BIT :: 1;
+    _1BIT :: 0; ///< 1-bit.
+    _4BIT :: 1; ///< 4-bit.
 }
 
 /// Card SPI bus mode.
 FS_SpecialContentType :: enum u8 {
-    UPDATE    :: 1;
-    MANUAL    :: 2;
-    DLP_CHILD :: 3;
+    UPDATE    :: 1; ///< Update.
+    MANUAL    :: 2; ///< Manual.
+    DLP_CHILD :: 3; ///< DLP child.
 }
 
 FS_CardType :: enum u8 {
-    CTR :: 0;
-    TWL :: 1;
+    CTR :: 0; ///< CTR card.
+    TWL :: 1; ///< TWL card.
 }
 
 /// FS control actions.
@@ -4646,15 +5344,15 @@ FS_Action :: enum u8 {
 
 /// Archive control actions.
 FS_ArchiveAction :: enum u16 {
-    COMMIT_SAVE_DATA :: 0;
-    GET_TIMESTAMP    :: 1;
-    UNKNOWN          :: 30877;
+    COMMIT_SAVE_DATA :: 0;     ///< Commits save data changes. No inputs/outputs.
+    GET_TIMESTAMP    :: 1;     ///< Retrieves a file's last-modified timestamp. In: "u16*, UTF-16 Path", Out: "u64, Time Stamp".
+    UNKNOWN          :: 30877; ///< Unknown action; calls FSPXI command 0x56. In: "FS_Path instance", Out: "u32[4], Unknown"
 }
 
 /// Secure save control actions.
 FS_SecureSaveAction :: enum u8 {
-    DELETE :: 0;
-    FORMAT :: 1;
+    DELETE :: 0; ///< Deletes a save's secure value. In: "u64, ((SecureValueSlot << 32) | (TitleUniqueId << 8) | TitleVariation)", Out: "u8, Value Existed"
+    FORMAT :: 1; ///< Formats a save. No inputs/outputs.
 }
 
 /// File control actions.
@@ -6184,6 +6882,11 @@ APT_AppletPos :: enum s8 {
 
 APT_AppletAttr :: u8;
 
+/// Create an APT_AppletAttr bitfield from its components.
+aptMakeAppletAttr :: inline (pos: APT_AppletPos, manualGpuRights: bool, manualDspRights: bool) -> APT_AppletAttr {
+    return xx ((pos&7) | (ifx manualGpuRights then BIT(3) else 0) | (ifx manualDspRights then BIT(4) else 0));
+}
+
 /// APT query reply.
 APT_QueryReply :: enum u8 {
     REJECT :: 0;
@@ -6310,8 +7013,20 @@ aptShouldJumpToHome :: () -> bool #foreign libctru;
 /// Returns true if there is an incoming HOME button press rejected by the policy set by \ref aptSetHomeAllowed (use this to show a "no HOME allowed" icon).
 aptCheckHomePressRejected :: () -> bool #foreign libctru;
 
+/// \deprecated Alias for \ref aptCheckHomePressRejected.
+aptIsHomePressed :: inline () -> bool #deprecated {
+    return aptCheckHomePressRejected();
+}
+
 /// Jumps back to the HOME menu.
 aptJumpToHomeMenu :: () -> void #foreign libctru;
+
+/// Handles incoming jump-to-HOME requests.
+aptHandleJumpToHome :: inline () {
+    if aptShouldJumpToHome() {
+        aptJumpToHomeMenu();
+    }
+}
 
 /**
 * @brief Main function which handles sleep mode and HOME/power buttons - call this at the beginning of every frame.
@@ -6402,6 +7117,16 @@ APT_Enable :: (attr: APT_AppletAttr) -> Result #foreign libctru;
 * @param active_appid Pointer to output the AppID of the currently active applet to.
 */
 APT_GetAppletManInfo :: (inpos: APT_AppletPos, outpos: *APT_AppletPos, req_appid: *NS_APPID, menu_appid: *NS_APPID, active_appid: *NS_APPID) -> Result #foreign libctru;
+
+/**
+ * @brief Gets the menu's app ID.
+ * @return The menu's app ID.
+ */
+aptGetMenuAppID :: inline () -> NS_APPID {
+    menu_appid: NS_APPID = .NONE;
+    APT_GetAppletManInfo(.NONE, null, null, *menu_appid, null);
+    return menu_appid;
+}
 
 /**
 * @brief Gets an applet's information.
@@ -8298,6 +9023,48 @@ CAPTURE :: enum u16 {
     ENABLE       :: 32768;
 }
 
+/// Creates a CSND timer value from a sample rate.
+CSND_TIMER :: inline (n: u32) {
+    return (0x3FEC3FC / cast(u32) n);
+}
+
+/**
+ * @brief Converts a vol-pan pair into a left/right volume pair used by the hardware.
+ * @param vol Volume to use.
+ * @param pan Pan to use.
+ * @return A left/right volume pair for use by hardware.
+ */
+CSND_VOL :: inline (vol: float, pan: float) -> u32 {
+    rpan: float;
+    lvol, rvol: u32;
+
+    if      vol < 0.0  vol = 0.0;
+    else if vol > 1.0  vol = 1.0;
+
+    rpan = (pan+1) / 2;
+    if      rpan < 0.0  rpan = 0.0;
+    else if rpan > 1.0  rpan = 1.0;
+
+    lvol = xx (vol*(1-rpan) * 0x8000);
+    rvol = xx (vol*rpan     * 0x8000);
+    return lvol | (rvol << 16);
+}
+
+/// Creates a sound channel value from a channel number.
+SOUND_CHANNEL :: inline (n: u32) -> u32 {
+    return n & 0x1F;
+}
+
+/// Creates a sound format value from an encoding.
+SOUND_FORMAT :: inline (n: u32) -> u32 {
+    return n << 12;
+}
+
+/// Creates a sound loop mode value from a loop mode.
+SOUND_LOOPMODE :: inline (n: u32) -> u32 {
+    return n << 10;
+}
+
 /// Duty cycles for a PSG channel.
 CSND_DutyCycle :: enum u8 {
     _0  :: 7;
@@ -8334,6 +9101,10 @@ CSND_CapInfo :: union {
         unknownZero: u32; ///< Unknown.
     }
 }
+
+csndSharedMem:     *vu32 #elsewhere; ///< CSND shared memory.
+csndSharedMemSize: u32   #elsewhere; ///< CSND shared memory size.
+csndChannels:      u32   #elsewhere; ///< Bitmask of channels that are allowed for usage.
 
 /**
 * @brief Acquires a capture unit.
@@ -9888,33 +10659,35 @@ GSPLCD_SetBrightnessRaw :: (screen: u32, brightness: u32) -> Result #foreign lib
 
 /// Key values.
 KEY :: enum_flags u32 {
-    A            :: 1;
-    B            :: 2;
-    SELECT       :: 4;
-    START        :: 8;
-    DRIGHT       :: 16;
-    DLEFT        :: 32;
-    DUP          :: 64;
-    DDOWN        :: 128;
-    R            :: 256;
-    L            :: 512;
-    X            :: 1024;
-    Y            :: 2048;
-    ZL           :: 16384;
-    ZR           :: 32768;
-    TOUCH        :: 1048576;
-    CSTICK_RIGHT :: 16777216;
-    CSTICK_LEFT  :: 33554432;
-    CSTICK_UP    :: 67108864;
-    CSTICK_DOWN  :: 134217728;
-    CPAD_RIGHT   :: 268435456;
-    CPAD_LEFT    :: 536870912;
-    CPAD_UP      :: 1073741824;
-    CPAD_DOWN    :: 2147483648;
-    UP           :: 1073741888;
-    DOWN         :: 2147483776;
-    LEFT         :: 536870944;
-    RIGHT        :: 268435472;
+    A            :: 1;          ///< A
+    B            :: 2;          ///< B
+    SELECT       :: 4;          ///< Select
+    START        :: 8;          ///< Start
+    DRIGHT       :: 16;         ///< D-Pad Right
+    DLEFT        :: 32;         ///< D-Pad Left
+    DUP          :: 64;         ///< D-Pad Up
+    DDOWN        :: 128;        ///< D-Pad Down
+    R            :: 256;        ///< R
+    L            :: 512;        ///< L
+    X            :: 1024;       ///< X
+    Y            :: 2048;       ///< Y
+    ZL           :: 16384;      ///< ZL (New 3DS only)
+    ZR           :: 32768;      ///< ZR (New 3DS only)
+    TOUCH        :: 1048576;    ///< Touch (Not actually provided by HID)
+    CSTICK_RIGHT :: 16777216;   ///< C-Stick Right (New 3DS only)
+    CSTICK_LEFT  :: 33554432;   ///< C-Stick Left (New 3DS only)
+    CSTICK_UP    :: 67108864;   ///< C-Stick Up (New 3DS only)
+    CSTICK_DOWN  :: 134217728;  ///< C-Stick Down (New 3DS only)
+    CPAD_RIGHT   :: 268435456;  ///< Circle Pad Right
+    CPAD_LEFT    :: 536870912;  ///< Circle Pad Left
+    CPAD_UP      :: 1073741824; ///< Circle Pad Up
+    CPAD_DOWN    :: 2147483648; ///< Circle Pad Down
+
+    // Generic catch-all directions
+    UP           :: DUP    | CPAD_UP;    ///< D-Pad Up or Circle Pad Up
+    DOWN         :: DDOWN  | CPAD_DOWN;  ///< D-Pad Down or Circle Pad Down
+    LEFT         :: DLEFT  | CPAD_LEFT;  ///< D-Pad Left or Circle Pad Left
+    RIGHT        :: DRIGHT | CPAD_RIGHT; ///< D-Pad Right or Circle Pad Right
 }
 
 /// Touch position.
@@ -9945,13 +10718,17 @@ angularRate :: struct {
 
 /// HID events.
 HID_Event :: enum u8 {
-    PAD0     :: 0;
-    PAD1     :: 1;
-    Accel    :: 2;
-    Gyro     :: 3;
-    DebugPad :: 4;
-    MAX      :: 5;
+    PAD0     :: 0; ///< Event signaled by HID-module, when the sharedmem+0(PAD/circle-pad)/+0xA8(touch-screen) region was updated.
+    PAD1     :: 1; ///< Event signaled by HID-module, when the sharedmem+0(PAD/circle-pad)/+0xA8(touch-screen) region was updated.
+    Accel    :: 2; ///< Event signaled by HID-module, when the sharedmem accelerometer state was updated.
+    Gyro     :: 3; ///< Event signaled by HID-module, when the sharedmem gyroscope state was updated.
+    DebugPad :: 4; ///< Event signaled by HID-module, when the sharedmem DebugPad state was updated.
+
+    MAX      :: 5; ///< Used to know how many events there are.
 }
+
+hidMemHandle: Handle #elsewhere; ///< HID shared memory handle.
+hidSharedMem: *vu32  #elsewhere; ///< HID shared memory.
 
 /// Initializes HID.
 hidInit :: () -> Result #foreign libctru;
@@ -10070,6 +10847,15 @@ HIDUSER_GetGyroscopeRawToDpsCoefficient :: (coeff: *float) -> Result #foreign li
 * @param volume Pointer to write the volume slider value to.
 */
 HIDUSER_GetSoundVolume :: (volume: *u8) -> Result #foreign libctru;
+
+/// IRRST's shared memory handle.
+irrstMemHandle: Handle #elsewhere;
+
+/// IRRST's shared memory.
+irrstSharedMem: *vu32 #elsewhere;
+
+/// IRRST's state update event
+irrstEvent: Handle #elsewhere;
 
 /// Initializes IRRST.
 irrstInit :: () -> Result #foreign libctru;
@@ -11721,6 +12507,15 @@ PTMNOTIFID :: enum u16 {
     BATTERY_LOW      :: 530;
 }
 
+/// See @ref PTMSYSM_NotifySleepPreparationComplete. Corresponds to the number of potentially remaning notifs. until sleep/wakeup.
+ptmSysmGetNotificationAckValue :: inline (id: PTMNOTIFID) -> s32
+{
+    values := s32.[ 3, -1, 1, 0, 0, -1, 2 ];
+    if (id < .SLEEP_REQUESTED || id > .HALF_AWAKE)
+        return -1;
+    return values[id - .SLEEP_REQUESTED];
+}
+
 /// Initializes ptm:sysm.
 ptmSysmInit :: () -> Result #foreign libctru;
 
@@ -11874,6 +12669,27 @@ pxiDevInit :: () -> Result #foreign libctru;
 
 /// Shuts down pxi:dev.
 pxiDevExit :: () -> void #foreign libctru;
+
+/**
+ * @brief Creates a packed card SPI transfer option value.
+ * @param baudRate Baud rate to use when transferring.
+ * @param busMode Bus mode to use when transferring.
+ * @return A packed card SPI transfer option value.
+ */
+pxiDevMakeTransferOption :: inline (baudRate: FS_CardSpiBaudRate, busMode: FS_CardSpiBusMode) -> u8 {
+    return (baudRate & 0x3F) | ((busMode & 0x3) << 6);
+}
+
+/**
+ * @brief Creates a packed card SPI wait operation value.
+ * @param waitType Type of wait to perform.
+ * @param deassertType Type of register deassertion to perform.
+ * @param timeout Timeout, in nanoseconds, to wait, if applicable.
+ * @return A packed card SPI wait operation value.
+ */
+pxiDevMakeWaitOperation :: inline (waitType: PXIDEV_WaitType, deassertType: PXIDEV_DeassertType, timeout: u64) -> u64 {
+    return (waitType & 0xF) | ((deassertType & 0xF) << 4) | ((timeout & 0xFFFFFFFFFFFFFF) << 8);
+}
 
 /**
 * @brief Performs multiple card SPI writes and reads.
@@ -12830,6 +13646,24 @@ GX_FILL_CONTROL :: enum_flags u16 {
     _32BIT_DEPTH :: 512;
 }
 
+/// Creates a transfer vertical flip flag.
+GX_TRANSFER_FLIP_VERT  :: inline (x: u32) -> u32 { return x<<0; }
+/// Creates a transfer tiled output flag.
+GX_TRANSFER_OUT_TILED  :: inline (x: u32) -> u32 { return x<<1; }
+/// Creates a transfer raw copy flag.
+GX_TRANSFER_RAW_COPY   :: inline (x: u32) -> u32 { return x<<3; }
+/// Creates a transfer input format flag.
+GX_TRANSFER_IN_FORMAT  :: inline (x: u32) -> u32 { return x<<8; }
+/// Creates a transfer output format flag.
+GX_TRANSFER_OUT_FORMAT :: inline (x: u32) -> u32 { return x<<12; }
+/// Creates a transfer scaling flag.
+GX_TRANSFER_SCALING    :: inline (x: u32) -> u32 { return x<<24; }
+
+/// Updates gas additive blend results.
+GX_CMDLIST_UPDATE_GAS_ACC :: #run BIT(0);
+/// Flushes the command list.
+GX_CMDLIST_FLUSH          :: #run BIT(1);
+
 /// GX command entry
 gxCmdEntry_s :: union {
     data: [8] u32; ///< Raw command data
@@ -12889,6 +13723,17 @@ gxCmdQueueStop :: (queue: *gxCmdQueue_s) -> void #foreign libctru;
 * @return false if timeout expired, true otherwise.
 */
 gxCmdQueueWait :: (queue: *gxCmdQueue_s, timeout: s64) -> bool #foreign libctru;
+
+/**
+ * @brief Sets the completion callback for a GX command queue.
+ * @param queue The GX command queue.
+ * @param callback The completion callback.
+ * @param user User data.
+ */
+gxCmdQueueSetCallback :: inline (queue: *gxCmdQueue_s, callback: #type (*gxCmdQueue_s) -> void, user: *void) {
+    queue.callback = callback;
+    queue.user     = user;
+}
 
 /**
 * @brief Selects a command queue to which GX_* functions will add commands instead of immediately submitting them to GX.
@@ -12958,6 +13803,46 @@ GX_TextureCopy :: (inadr: *u32, indim: u32, outadr: *u32, outdim: u32, size: u32
 * @param buf2s Size of the third buffer.
 */
 GX_FlushCacheRegions :: (buf0a: *u32, buf0s: u32, buf1a: *u32, buf1s: u32, buf2a: *u32, buf2s: u32) -> Result #foreign libctru;
+
+/// Creates a texture magnification filter parameter from a @ref GPU_TEXTURE_FILTER_PARAM
+GPU_TEXTURE_MAG_FILTER :: inline (v: GPU_TEXTURE_FILTER_PARAM) -> u32 {
+    return (v&0x1)<<1;
+}
+
+/// Creates a texture minification filter parameter from a @ref GPU_TEXTURE_FILTER_PARAM
+GPU_TEXTURE_MIN_FILTER :: inline (v: GPU_TEXTURE_FILTER_PARAM) -> u32 {
+    return (v&0x1)<<2;
+}
+
+/// Creates a texture mipmap filter parameter from a @ref GPU_TEXTURE_FILTER_PARAM
+GPU_TEXTURE_MIP_FILTER :: inline (v: GPU_TEXTURE_FILTER_PARAM) -> u32 {
+    return (v&0x1)<<24;
+}
+
+/// Creates a texture wrap S parameter from a @ref GPU_TEXTURE_WRAP_PARAM
+GPU_TEXTURE_WRAP_S :: inline (v: GPU_TEXTURE_WRAP_PARAM) -> u32 {
+    return (v&0x3)<<12;
+}
+
+/// Creates a texture wrap T parameter from a @ref GPU_TEXTURE_WRAP_PARAM
+GPU_TEXTURE_WRAP_T :: inline (v: GPU_TEXTURE_WRAP_PARAM) -> u32 {
+    return (v&0x3)<<8;
+}
+
+/// Creates a texture mode parameter from a @ref GPU_TEXTURE_MODE_PARAM
+GPU_TEXTURE_MODE :: inline (v: GPU_TEXTURE_MODE_PARAM) -> u32 {
+    return (v&0x7)<<28;
+}
+
+/// Texture parameter indicating ETC1 texture.
+GPU_TEXTURE_ETC1_PARAM   :: #run BIT(5);
+/// Texture parameter indicating shadow texture.
+GPU_TEXTURE_SHADOW_PARAM :: #run BIT(20);
+
+/// Creates a combiner buffer write configuration.
+GPU_TEV_BUFFER_WRITE_CONFIG :: inline (stage0: u32, stage1: u32, stage2: u32, stage3: u32) -> u32 {
+    return stage0 | (stage1 << 1) | (stage2 << 2) | (stage3 << 3);
+}
 
 /// Texture filters.
 GPU_TEXTURE_FILTER_PARAM :: enum u8 {
@@ -13112,6 +13997,11 @@ GPU_GASDEPTHFUNC :: enum u8 {
     LESS    :: 3;
 }
 
+/// Converts \ref GPU_TESTFUNC into \ref GPU_GASDEPTHFUNC.
+GPU_MAKEGASDEPTHFUNC :: inline (n: GPU_TESTFUNC) -> GPU_GASDEPTHFUNC {
+    return xx (0xAF02>>(n<<1))&3;
+}
+
 /// Scissor test modes.
 GPU_SCISSORMODE :: enum u8 {
     DISABLE :: 0;
@@ -13212,6 +14102,11 @@ GPU_CULLMODE :: enum u8 {
     BACK_CCW  :: 2;
 }
 
+/// Creates a VBO attribute parameter from its index, size, and format.
+GPU_ATTRIBFMT :: inline (i: u32, n: u32, f: GPU_FORMATS) -> u32 {
+    return (((n-1)<<2)|(f&3))<<(i*4);
+}
+
 /// Texture combiner sources.
 GPU_TEVSRC :: enum u8 {
     PRIMARY_COLOR            :: 0;
@@ -13276,6 +14171,61 @@ GPU_TEVSCALE :: enum u8 {
     X1 :: 0;
     X2 :: 1;
     X4 :: 2;
+}
+
+/// Creates a texture combiner source parameter from three sources.
+GPU_TEVSOURCES :: inline (a: u32, b: u32, c: u32) {
+    return ((a)|(b<<4)|(c<<8));
+}
+
+/// Creates a texture combiner operand parameter from three operands.
+GPU_TEVOPERANDS :: inline (a: u32, b: u32, c: u32) {
+    return ((a)|(b<<4)|(c<<8));
+}
+
+/// Creates a light environment layer configuration parameter.
+GPU_LIGHT_ENV_LAYER_CONFIG :: inline (n: u32) -> u32 {
+    return n+(n==7);
+}
+
+/// Light shadow disable bits in GPUREG_LIGHT_CONFIG1.
+GPU_LC1_SHADOWBIT :: inline (n: u32) -> u32 {
+    return BIT(n);
+}
+
+/// Light spot disable bits in GPUREG_LIGHT_CONFIG1.
+GPU_LC1_SPOTBIT :: inline (n: u32) -> u32 {
+    return BIT(n+8);
+}
+
+/// LUT disable bits in GPUREG_LIGHT_CONFIG1.
+GPU_LC1_LUTBIT :: inline (n: u32) -> u32 {
+    return BIT(n+16);
+}
+
+/// Light distance attenuation disable bits in GPUREG_LIGHT_CONFIG1.
+GPU_LC1_ATTNBIT :: inline (n: u32) -> u32 {
+    return BIT(n+24);
+}
+
+/// Creates a light permutation parameter.
+GPU_LIGHTPERM :: inline (i: u32, n: u32) -> u32 {
+    return n << (i*4);
+}
+
+/// Creates a light LUT input parameter.
+MAKE_GPU_LIGHTLUTINPUT :: inline (i: u32, n: u32) -> u32 {
+    return n << (i*4);
+}
+
+/// Creates a light LUT index parameter.
+GPU_LIGHTLUTIDX :: inline (c: u32, i: u32, o: u32) -> u32 {
+    return o | (i << 8) | (c << 11);
+}
+
+/// Creates a light color parameter from red, green, and blue components.
+GPU_LIGHTCOLOR :: inline (r: u32, g: u32, b: u32) -> u32 {
+    return (b & 0xFF) | ((g << 10) & 0xFF) | ((r << 20) & 0xFF);
 }
 
 /// Fresnel options.
@@ -13365,6 +14315,43 @@ GPU_SHADER_TYPE :: enum u8 {
     GEOMETRY_SHADER :: 1;
 }
 
+/// Creates a GPU command header from its write increments, mask, and register.
+GPUCMD_HEADER :: inline (incremental: u32, mask: u32, reg: u32) -> u32 {
+    return (((incremental)<<31)|(((mask)&0xF)<<16)|((reg)&0x3FF));
+}
+
+/**
+ * @brief Sets the GPU command buffer to use.
+ * @param adr Pointer to the command buffer.
+ * @param size Size of the command buffer.
+ * @param offset Offset of the command buffer.
+ */
+GPUCMD_SetBuffer :: inline (adr: *u32, size: u32, offset: u32) {
+    gpuCmdBuf       = adr;
+    gpuCmdBufSize   = size;
+    gpuCmdBufOffset = offset;
+}
+
+/**
+ * @brief Sets the offset of the GPU command buffer.
+ * @param offset Offset of the command buffer.
+ */
+GPUCMD_SetBufferOffset :: inline (offset: u32) {
+    gpuCmdBufOffset = offset;
+}
+
+/**
+ * @brief Gets the current GPU command buffer.
+ * @param addr Pointer to output the command buffer to.
+ * @param size Pointer to output the size (in words) of the command buffer to.
+ * @param offset Pointer to output the offset of the command buffer to.
+ */
+GPUCMD_GetBuffer :: inline (addr: **u32, size: *u32, offset: *u32) {
+    if addr   { <<addr   = gpuCmdBuf; }
+    if size   { <<size   = gpuCmdBufSize; }
+    if offset { <<offset = gpuCmdBufOffset; }
+}
+
 /**
 * @brief Adds raw GPU commands to the current command buffer.
 * @param cmd Buffer containing commands to add.
@@ -13414,6 +14401,45 @@ f32tof24 :: (f: float) -> u32 #foreign libctru;
 * @return The converted float.
 */
 f32tof31 :: (f: float) -> u32 #foreign libctru;
+
+gpuCmdBuf:       *u32 #elsewhere; ///< GPU command buffer.
+gpuCmdBufSize:    u32 #elsewhere; ///< GPU command buffer size.
+gpuCmdBufOffset:  u32 #elsewhere; ///< GPU command buffer offset.
+
+/// Adds a command with a single parameter to the current command buffer.
+GPUCMD_AddSingleParam :: inline (header: u32, param: u32) {
+    GPUCMD_Add(header, *param, 1);
+}
+
+/// Adds a masked register write to the current command buffer.
+GPUCMD_AddMaskedWrite :: inline (reg: u32, mask: u32, val: u32) {
+    GPUCMD_AddSingleParam(GPUCMD_HEADER(0, mask, reg), val);
+}
+
+/// Adds a register write to the current command buffer.
+GPUCMD_AddWrite :: inline (reg: u32, val: u32) {
+    GPUCMD_AddMaskedWrite(reg, 0xF, val);
+}
+
+/// Adds multiple masked register writes to the current command buffer.
+GPUCMD_AddMaskedWrites :: inline (reg: u32, mask: u32, vals: u32, num: u32) {
+    GPUCMD_Add(GPUCMD_HEADER(0, mask, reg), vals, num);
+}
+
+/// Adds multiple register writes to the current command buffer.
+GPUCMD_AddWrites :: inline (reg: u32, vals: u32, num: u32) {
+    GPUCMD_AddMaskedWrites(reg, 0xF, vals, num);
+}
+
+/// Adds multiple masked incremental register writes to the current command buffer.
+GPUCMD_AddMaskedIncrementalWrites :: inline (reg: u32, mask: u32, vals: u32, num: u32) {
+    GPUCMD_Add(GPUCMD_HEADER(1, mask, reg), vals, num);
+}
+
+/// Adds multiple incremental register writes to the current command buffer.
+GPUCMD_AddIncrementalWrites :: inline (reg: u32, vals: u32, num: u32) {
+    GPUCMD_AddMaskedIncrementalWrites(reg, 0xF, vals, num);
+}
 
 /// DVLE type.
 DVLE_type :: enum u8 {
@@ -13832,30 +14858,42 @@ ndspAuxSetCallback :: (id: s32, callback: ndspAuxCallback, data: *void) -> void 
 ///@{
 /// Supported sample encodings.
 NDSP_ENCODING :: enum u8 {
-    PCM8  :: 0;
-    PCM16 :: 1;
-    ADPCM :: 2;
+    PCM8  :: 0; ///< PCM8
+    PCM16 :: 1; ///< PCM16
+    ADPCM :: 2; ///< DSPADPCM (GameCube format)
+}
+
+/// Specifies the number of channels used in a sample.
+ndsp_channels :: inline (n: u32) -> u32 {
+    return n & 3;
+}
+/// Specifies the encoding used in a sample.
+ndsp_encoding :: inline (n: NDSP_ENCODING) -> u32 {
+    return (cast(u32)n & 3) << 2;
 }
 
 /// Channel format flags for use with ndspChnSetFormat.
-NDSP :: enum_flags u8 {
-    FORMAT_MONO_PCM8          :: 1;
-    FORMAT_MONO_PCM16         :: 5;
-    FORMAT_MONO_ADPCM         :: 9;
-    FORMAT_STEREO_PCM8        :: 2;
-    FORMAT_STEREO_PCM16       :: 6;
-    FORMAT_PCM8               :: 1;
-    FORMAT_PCM16              :: 5;
-    FORMAT_ADPCM              :: 9;
-    FRONT_BYPASS              :: 16;
-    _3D_SURROUND_PREPROCESSED :: 64;
+NDSP_FORMAT :: enum_flags u8 {
+    MONO_PCM8    :: #run ndsp_channels(1) | ndsp_encoding(NDSP_ENCODING.PCM8);  ///< Buffer contains Mono   PCM8.
+    MONO_PCM16   :: #run ndsp_channels(1) | ndsp_encoding(NDSP_ENCODING.PCM16); ///< Buffer contains Mono   PCM16.
+    MONO_ADPCM   :: #run ndsp_channels(1) | ndsp_encoding(NDSP_ENCODING.ADPCM); ///< Buffer contains Mono   ADPCM.
+    STEREO_PCM8  :: #run ndsp_channels(2) | ndsp_encoding(NDSP_ENCODING.PCM8);  ///< Buffer contains Stereo PCM8.
+    STEREO_PCM16 :: #run ndsp_channels(2) | ndsp_encoding(NDSP_ENCODING.PCM16); ///< Buffer contains Stereo PCM16.
+
+    PCM8  :: MONO_PCM8;  ///< (Alias) Buffer contains Mono PCM8.
+    PCM16 :: MONO_PCM16; ///< (Alias) Buffer contains Mono PCM16.
+    ADPCM :: MONO_ADPCM; ///< (Alias) Buffer contains Mono ADPCM.
+
+    // Flags
+    FRONT_BYPASS              :: 16; ///< Front bypass.
+    _3D_SURROUND_PREPROCESSED :: 64; ///< (?) Unknown, under research
 }
 
 /// Interpolation types.
 ndspInterpType :: enum u8 {
-    POLYPHASE :: 0;
-    LINEAR    :: 1;
-    NONE      :: 2;
+    POLYPHASE :: 0; ///< Polyphase interpolation
+    LINEAR    :: 1; ///< Linear interpolation
+    NONE      :: 2; ///< No interpolation
 }
 
 ///@name Basic channel operation
@@ -14220,6 +15258,39 @@ SwkbdState :: struct {
 swkbdInit :: (swkbd: *SwkbdState, type: SwkbdType, numButtons: s32, maxTextLength: s32) -> void #foreign libctru;
 
 /**
+ * @brief Configures password mode in a software keyboard.
+ * @param swkbd Pointer to swkbd state.
+ * @param mode Password mode.
+ */
+swkbdSetPasswordMode :: inline (swkbd: *SwkbdState, mode: SwkbdPasswordMode) {
+    swkbd.password_mode = mode;
+}
+
+/**
+ * @brief Configures input validation in a software keyboard.
+ * @param swkbd Pointer to swkbd state.
+ * @param validInput Specifies which inputs are valid.
+ * @param filterFlags Bitmask specifying which characters are disallowed (filtered).
+ * @param maxDigits In case digits are disallowed, specifies how many digits are allowed at maximum in input strings (0 completely restricts digit input).
+ */
+swkbdSetValidation :: inline (swkbd: *SwkbdState, validInput: SwkbdValidInput, filterFlags: u32, maxDigits: s32) {
+    swkbd.valid_input = validInput;
+    swkbd.filter_flags = filterFlags;
+    swkbd.max_digits = ifx filterFlags & SWKBD_FILTER_DIGITS then maxDigits else 0;
+}
+
+/**
+ * @brief Configures what characters will the two bottom keys in a numpad produce.
+ * @param swkbd Pointer to swkbd state.
+ * @param left Unicode codepoint produced by the leftmost key in the bottom row (0 hides the key).
+ * @param left Unicode codepoint produced by the rightmost key in the bottom row (0 hides the key).
+ */
+swkbdSetNumpadKeys :: inline (swkbd: *SwkbdState, left: s32, right: s32) {
+    swkbd.numpad_keys[0] = left;
+    swkbd.numpad_keys[1] = right;
+}
+
+/**
 * @brief Specifies which special features are enabled in a software keyboard.
 * @param swkbd Pointer to swkbd state.
 * @param features Feature bitmask.
@@ -14299,6 +15370,15 @@ swkbdSetFilterCallback :: (swkbd: *SwkbdState, callback: SwkbdCallbackFn, user: 
 * @return The identifier of the dialog button that was pressed, or SWKBD_BUTTON_NONE if a different condition was triggered - in that case use swkbdGetResult to check the condition.
 */
 swkbdInputText :: (swkbd: *SwkbdState, buf: *u8, bufsize: size_t) -> SwkbdButton #foreign libctru;
+
+/**
+ * @brief Retrieves the result condition of a software keyboard after it has been used.
+ * @param swkbd Pointer to swkbd state.
+ * @return The result value.
+ */
+swkbdGetResult :: inline (swkbd: *SwkbdState) -> SwkbdResult {
+    return swkbd.result;
+}
 
 ERROR :: enum u16 {
     LANGUAGE_FLAG  :: 256;
@@ -14506,6 +15586,18 @@ miiSelectorWhitelistUserMii :: (conf: *MiiSelectorConf, index: u32) -> void #for
 miiSelectorBlacklistUserMii :: (conf: *MiiSelectorConf, index: u32) -> void #foreign libctru;
 
 /**
+ * @brief Specifies which Mii the cursor should start from
+ *
+ * @param conf Pointer to miiSelector configuration
+ * @param index Indexed number of the Mii that the cursor will start on.
+ * If there is no mii with that index, the the cursor will start at the Mii
+ * with the index 0 (the personal Mii).
+ */
+miiSelectorSetInitialIndex :: inline (conf: *MiiSelectorConf, index: u32) {
+    conf.initial_index = index;
+}
+
+/**
 * @brief Get Mii name
 *
 * @param returnbuf Pointer to miiSelector return
@@ -14639,6 +15731,17 @@ romfsMountFromTitle :: (tid: u64, mediatype: FS_MediaType, name: *u8) -> Result 
 /// Unmounts the RomFS device.
 romfsUnmount :: (name: *u8) -> Result #foreign libctru;
 
+/// Wrapper for \ref romfsMountSelf with the default "romfs" device name.
+romfsInit :: inline () -> Result {
+    return romfsMountSelf("romfs");
+}
+
+/// Wrapper for \ref romfsUnmount with the default "romfs" device name.
+romfsExit :: inline () -> Result {
+    return romfsUnmount("romfs");
+}
+
+
 /// Character width information structure.
 charWidthInfo_s :: struct {
     left:       s8; ///< Horizontal offset to draw the glyph with.
@@ -14770,6 +15873,42 @@ fontEnsureMapped :: () -> Result #foreign libctru;
 */
 fontFixPointers :: (font: *CFNT_s) -> void #foreign libctru;
 
+/// Gets the currently loaded system font
+fontGetSystemFont :: inline () -> *CFNT_s {
+    g_sharedFont: *CFNT_s #elsewhere;
+    if !g_sharedFont  fontEnsureMapped();
+    return g_sharedFont;
+}
+
+/**
+ * @brief Retrieves the font information structure of a font.
+ * @param font Pointer to font structure. If NULL, the shared system font is used.
+ */
+fontGetInfo :: inline (font: *CFNT_s) -> *FINF_s {
+    if !font  font = fontGetSystemFont();
+    return *font.finf;
+}
+
+/**
+ * @brief Retrieves the texture sheet information of a font.
+ * @param font Pointer to font structure. If NULL, the shared system font is used.
+ */
+fontGetGlyphInfo :: inline (font: *CFNT_s) -> *TGLP_s {
+    if !font  font = fontGetSystemFont();
+    return fontGetInfo(font).tglp;
+}
+
+/**
+ * @brief Retrieves the pointer to texture data for the specified texture sheet.
+ * @param font Pointer to font structure. If NULL, the shared system font is used.
+ * @param sheetIndex Index of the texture sheet.
+ */
+fontGetGlyphSheetTex :: inline (font: *CFNT_s, sheetIndex: s32) -> *void {
+    if !font  font = fontGetSystemFont();
+    tglp := fontGetGlyphInfo(font);
+    return *tglp.sheetData[sheetIndex*tglp.sheetSize];
+}
+
 /**
 * @brief Retrieves the glyph index of the specified Unicode codepoint.
 * @param font Pointer to font structure. If NULL, the shared system font is used.
@@ -14822,13 +15961,51 @@ gdbHioDevSystem :: (command: *u8) -> s32 #foreign libctru;
 */
 link3dsConnectToHost :: (redirStdout: bool, redirStderr: bool) -> s32 #foreign libctru;
 
-htonl :: (hostlong: u32) -> u32 #foreign libctru;
+/// Same as \ref link3dsConnectToHost but redirecting both stdout/stderr.
+link3dsStdio :: inline () -> s32 {
+    return link3dsConnectToHost(true, true);
+}
 
-htons :: (hostshort: u16) -> u16 #foreign libctru;
+/// Same as \ref link3dsConnectToHost but redirecting only stderr.
+link3dsStdioForDebug :: inline () -> s32 {
+    return link3dsConnectToHost(false, true);
+}
 
-ntohl :: (netlong: u32) -> u32 #foreign libctru;
+// @Speed! Replace with an intrinsic.
+bswap :: inline (val: $T) -> T {
+    temp, temp2 : union {
+        arr: [size_of(T)] u8;
+        n: T;
+    } = .{n = val}, .{n = 0};
 
-ntohs :: (netshort: u16) -> u16 #foreign libctru;
+    #insert #run -> string {
+        builder: String_Builder;
+
+        for 0..size_of(T)-1 {
+            print_to_builder(*builder, "temp2.arr[%] = temp.arr[%];\n", size_of(T)-it-1, it);
+        }
+
+        return builder_to_string(*builder);
+    };
+
+    return temp2.n;
+}
+
+htonl :: inline (hostlong: u32) -> u32 {
+    return bswap(hostlong);
+}
+
+htons :: inline (hostshort: u16) -> u16 {
+    return bswap(hostshort);
+}
+
+ntohl :: inline (netlong: u32) -> u32 {
+    return bswap(netlong);
+}
+
+ntohs :: inline (netshort: u16) -> u16 {
+    return bswap(netshort);
+}
 
 inet_addr :: (cp: *u8) -> in_addr_t #foreign libctru;
 inet_aton :: (cp: *u8, inp: *in_addr) -> s32 #foreign libctru;

@@ -440,7 +440,6 @@ C2D_DrawCircleSolid :: inline (
 */
 C2D_DrawEllipse :: (x: float, y: float, z: float, w: float, h: float, clr0: u32, clr1: u32, clr2: u32, clr3: u32) -> bool #foreign libcitro2d;
 
-C2D_Font_s :: struct {}
 C2D_Font :: *C2D_Font_s;
 
 /** @brief Load a font from a file
@@ -867,6 +866,112 @@ C2D_DrawSpriteTinted :: inline (sprite: *C2D_Sprite, tint: *C2D_ImageTint) -> bo
 }
 
 /** @} */
+
+//
+// citro2d internals
+//
+
+C2Di_Vertex :: struct {
+    pos:      [3] float;
+    texcoord: [2] float;
+    ptcoord:  [2] float;
+    color:    u32;
+}
+
+C2Di_Context :: struct {
+    shader:        *DVLB_s;
+    program:       shaderProgram_s #align 4;
+    attrInfo:      C3D_AttrInfo;
+    bufInfo:       C3D_BufInfo;
+    ptBlend:       C3D_ProcTex;
+    ptCircle:      C3D_ProcTex;
+    ptBlendLut:    C3D_ProcTexLut;
+    ptCircleLut:   C3D_ProcTexLut;
+    sceneW:        u32;
+    sceneH:        u32;
+    vtxBuf:        *C2Di_Vertex;
+    idxBuf:        *u16 #align 4;
+    vtxBufSize:    size_t;
+    vtxBufPos:     size_t;
+    idxBufSize:    size_t;
+    idxBufPos:     size_t;
+    idxBufLastPos: size_t;
+    flags:         u32;
+    projMtx:       C3D_Mtx;
+    mdlvMtx:       C3D_Mtx;
+    curTex:        *C3D_Tex;
+    fadeClr:       u32;
+}
+
+C2DiF :: enum_flags u32 {
+    Active          :: 1;
+    DirtyProj       :: 2;
+    DirtyMdlv       :: 4;
+    DirtyTex        :: 8;
+    DirtyMode       :: 16;
+    DirtyFade       :: 32;
+
+    Mode_Shift      :: 8;
+    Mode_Mask       :: 0xf << Mode_Shift;
+    Mode_Solid      :: 0   << Mode_Shift;
+    Mode_Circle     :: 1   << Mode_Shift;
+    Mode_Text       :: 2   << Mode_Shift;
+    Mode_ImageSolid :: 3   << Mode_Shift;
+    Mode_ImageMult  :: 4   << Mode_Shift;
+    Mode_ImageLuma  :: 5   << Mode_Shift;
+
+    ProcTex_Shift  :: 12;
+    ProcTex_Mask   :: 0xf << ProcTex_Shift;
+    ProcTex_None   :: 0   << ProcTex_Shift;
+    ProcTex_Blend  :: 1   << ProcTex_Shift;
+    ProcTex_Circle :: 2   << ProcTex_Shift;
+
+    TintMode_Shift :: 16;
+    TintMode_Mask  :: 0xf << TintMode_Shift;
+
+    DirtyAny :: DirtyProj | DirtyMdlv | DirtyTex | DirtyMode | DirtyFade;
+}
+
+C2D_Font_s :: struct {
+    cfnt:        *CFNT_s;
+    glyphSheets: *C3D_Tex #align 4;
+    textScale:   float;
+}
+
+C2Di_GetContext :: inline () -> *C2Di_Context {
+    __C2Di_Context: C2Di_Context #elsewhere;
+    return *__C2Di_Context;
+}
+
+C2Di_SetMode :: inline (mode: u32) -> void {
+    ctx := C2Di_GetContext();
+    mode &= C2DiF_Mode_Mask;
+    if (ctx.flags & .Mode_Mask) != mode {
+        ctx.flags = .DirtyMode | (ctx.flags &~ .Mode_Mask) | mode;
+    }
+}
+
+C2Di_SetTex :: inline (tex: *C3D_Tex) -> void {
+    ctx := C2Di_GetContext();
+    if tex != ctx.curTex {
+        ctx.flags |= .DirtyTex;
+        ctx.curTex = tex;
+    }
+}
+
+C2Di_Quad :: struct {
+    topLeft:  [2] float;
+    topRight: [2] float;
+    botLeft:  [2] float;
+    botRight: [2] float;
+}
+
+C2Di_CalcQuad :: (quad_t: *C2Di_Quad, params: *C2D_DrawParams) -> void #foreign libcitro2d;
+C2Di_AppendTri :: () -> void #foreign libcitro2d;
+C2Di_AppendQuad :: () -> void #foreign libcitro2d;
+C2Di_AppendVtx :: (x: float, y: float, z: float, u: float, v: float, ptx: float, pty: float, color: u32) -> void #foreign libcitro2d;
+C2Di_FlushVtxBuf :: () -> void #foreign libcitro2d;
+C2Di_Update :: () -> void #foreign libcitro2d;
 
 #scope_file
 
