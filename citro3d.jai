@@ -3,7 +3,7 @@
 // Created with help of Bindings_Generator
 //
 
-#import,file "3ds.jai";
+#import,file "libctru.jai";
 #import "Math";
 
 M_PI  :: 3.14159265358979;

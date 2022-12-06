@@ -42,7 +42,7 @@ generate_bindings :: () -> bool {
     result := true;
 
     array_copy(*opts.source_files, CTRU_FILES);
-    result &&= generate_bindings(opts, "3ds.jai");
+    result &&= generate_bindings(opts, "libctru.jai");
 
     array_copy(*opts.source_files, CITRO3D_FILES);
     array_add(*opts.system_include_paths, opts.include_paths[0]);

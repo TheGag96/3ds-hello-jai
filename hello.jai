@@ -3,7 +3,7 @@
   Ported to Jai by TheGag96
 */
 
-#import,file "3ds.jai";
+#import,file "libctru.jai";
 #import,file "citro3d.jai";
 #import,file "citro2d.jai";
 
