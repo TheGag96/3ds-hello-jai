@@ -3,7 +3,7 @@
   Ported to Jai by TheGag96
 */
 
-#load "3ds.jai";
+#import,file "3ds.jai";
 
 libc :: #foreign_system_library,no_dll "libc";
 printf :: (fmt: *u8, va_args: .. Any) -> s32 #foreign libc;

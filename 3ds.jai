@@ -1,25 +1,37 @@
 //
-// This file was auto-generated using the following command:
-//
-// jai generate.jai
+// Jai bindings for libctru
+// Created with help of Bindings_Generator
 //
 
-// #load "libc_3ds.jai";
-
-size_t :: u32;
-ssize_t :: s32;
+size_t    :: u32;
+ssize_t   :: s32;
 ptrdiff_t :: s32;
-wchar_t :: s32;
-wint_t :: u32;
+wchar_t   :: s32;
+wint_t    :: u32;
+uintptr_t :: u32;
+off_t     :: s32;
+mode_t    :: s32;
+gid_t     :: s32;
+dev_t     :: s32;
+uid_t     :: s32;
+blksize_t :: s32;
+blkcnt_t  :: s32;
+nlink_t   :: u16;
+ino_t     :: u32;
 
 FILE :: void;
 
-time_t :: s64;
+time_t      :: s64;
 suseconds_t :: s32;
 
 timeval :: struct {
     tv_sec:  time_t; /* seconds */
     tv_usec: suseconds_t; /* and microseconds */
+}
+
+timespec :: struct {
+    tv_sec: time_t;     /* seconds */
+    tv_nsec: s32;    /* and nanoseconds */
 }
 
 in_port_t :: u16;
@@ -32,6 +44,110 @@ _LOCK_RECURSIVE_T :: struct {
     thread_tag: s32;
     counter: s32;
 }
+
+stat :: struct {
+    st_dev:     dev_t;
+    st_ino:     ino_t;
+    st_mode:    mode_t;
+    st_nlink:   nlink_t;
+    st_uid:     uid_t;
+    st_gid:     gid_t;
+    st_rdev:    dev_t;
+    st_size:    off_t;
+    st_atim:    timespec;
+    st_mtim:    timespec;
+    st_ctim:    timespec;
+    st_blksize: blksize_t;
+    st_blocks:  blkcnt_t;
+    st_spare4:  [2] s32;
+}
+
+__3DS__ :: 1;
+SOL_SOCKET :: 0xFFFF;
+
+PF_UNSPEC :: 0;
+PF_INET :: 2;
+PF_INET6 :: 23;
+
+AF_UNSPEC :: PF_UNSPEC;
+AF_INET :: PF_INET;
+AF_INET6 :: PF_INET6;
+
+SOCK_STREAM :: 1;
+SOCK_DGRAM :: 2;
+
+MSG_OOB :: 0x0001;
+MSG_PEEK :: 0x0002;
+MSG_DONTWAIT :: 0x0004;
+MSG_DONTROUTE :: 0x0000;
+MSG_WAITALL :: 0x0000;
+MSG_MORE :: 0x0000;
+MSG_NOSIGNAL :: 0x0000;
+
+SHUT_RD :: 0;
+SHUT_WR :: 1;
+SHUT_RDWR :: 2;
+
+SO_REUSEADDR :: 0x0004;
+SO_LINGER :: 0x0080;
+SO_OOBINLINE :: 0x0100;
+SO_SNDBUF :: 0x1001;
+SO_RCVBUF :: 0x1002;
+SO_SNDLOWAT :: 0x1003;
+SO_RCVLOWAT :: 0x1004;
+SO_TYPE :: 0x1008;
+SO_ERROR :: 0x1009;
+
+SO_BROADCAST :: 0x0000;
+
+INADDR_LOOPBACK :: 0x7f000001;
+INADDR_ANY :: 0x00000000;
+INADDR_BROADCAST :: 0xFFFFFFFF;
+INADDR_NONE :: 0xFFFFFFFF;
+
+INET_ADDRSTRLEN :: 16;
+
+IPPROTO_IP :: 0;
+IPPROTO_UDP :: 17;
+IPPROTO_TCP :: 6;
+
+IP_TOS :: 7;
+IP_TTL :: 8;
+IP_MULTICAST_LOOP :: 9;
+IP_MULTICAST_TTL :: 10;
+IP_ADD_MEMBERSHIP :: 11;
+IP_DROP_MEMBERSHIP :: 12;
+
+HOST_NOT_FOUND :: 1;
+NO_DATA :: 2;
+NO_ADDRESS :: NO_DATA;
+NO_RECOVERY :: 3;
+TRY_AGAIN :: 4;
+
+AI_PASSIVE :: 0x01;
+AI_CANONNAME :: 0x02;
+AI_NUMERICHOST :: 0x04;
+AI_NUMERICSERV :: 0x00;
+
+AI_ADDRCONFIG :: 0x00;
+
+NI_MAXHOST :: 1025;
+NI_MAXSERV :: 32;
+
+NI_NOFQDN :: 0x01;
+NI_NUMERICHOST :: 0x02;
+NI_NAMEREQD :: 0x04;
+NI_NUMERICSERV :: 0x00;
+NI_DGRAM :: 0x00;
+
+EAI_FAMILY :: -303;
+EAI_MEMORY :: -304;
+EAI_NONAME :: -305;
+EAI_SOCKTYPE :: -307;
+
+SOL_TCP :: 6;
+
+FIONBIO :: 1;
 
 CUR_PROCESS_HANDLE :: 0xFFFF8001;
 
@@ -149,61 +265,6 @@ UDS_HOST_NETWORKNODEID :: 0x1;
 UDS_DEFAULT_RECVBUFSIZE :: 0x2E30;
 
 UDS_DATAFRAME_MAXSIZE :: 0x5C6;
-
-SOL_SOCKET :: 0xFFFF;
-
-PF_UNSPEC :: 0;
-PF_INET :: 2;
-PF_INET6 :: 23;
-
-AF_UNSPEC :: PF_UNSPEC;
-AF_INET :: PF_INET;
-AF_INET6 :: PF_INET6;
-
-SOCK_STREAM :: 1;
-SOCK_DGRAM :: 2;
-
-MSG_OOB :: 0x0001;
-MSG_PEEK :: 0x0002;
-MSG_DONTWAIT :: 0x0004;
-MSG_DONTROUTE :: 0x0000;
-MSG_WAITALL :: 0x0000;
-MSG_MORE :: 0x0000;
-MSG_NOSIGNAL :: 0x0000;
-
-SHUT_RD :: 0;
-SHUT_WR :: 1;
-SHUT_RDWR :: 2;
-
-SO_REUSEADDR :: 0x0004;
-SO_LINGER :: 0x0080;
-SO_OOBINLINE :: 0x0100;
-SO_SNDBUF :: 0x1001;
-SO_RCVBUF :: 0x1002;
-SO_SNDLOWAT :: 0x1003;
-SO_RCVLOWAT :: 0x1004;
-SO_TYPE :: 0x1008;
-SO_ERROR :: 0x1009;
-
-SO_BROADCAST :: 0x0000;
-
-INADDR_LOOPBACK :: 0x7f000001;
-INADDR_ANY :: 0x00000000;
-INADDR_BROADCAST :: 0xFFFFFFFF;
-INADDR_NONE :: 0xFFFFFFFF;
-
-INET_ADDRSTRLEN :: 16;
-
-IPPROTO_IP :: 0;
-IPPROTO_UDP :: 17;
-IPPROTO_TCP :: 6;
-
-IP_TOS :: 7;
-IP_TTL :: 8;
-IP_MULTICAST_LOOP :: 9;
-IP_MULTICAST_TTL :: 10;
-IP_ADD_MEMBERSHIP :: 11;
-IP_DROP_MEMBERSHIP :: 12;
 
 SOL_CONFIG :: 0xfffe;
 
@@ -1000,21 +1061,110 @@ ARCHIVE_DIRITER_MAGIC :: 0x68637261;
 
 LINK3DS_COMM_PORT :: 17491;
 
-C3D_AspectRatioTop :: 400.0 / 240.0;
-C3D_AspectRatioBot :: 320.0 / 240.0;
+POLLIN :: 0x01;
+POLLPRI :: 0x02;
+POLLHUP :: 0x04;
+POLLERR :: 0x08;
+POLLOUT :: 0x10;
+POLLNVAL :: 0x20;
 
-C3D_MTXSTACK_SIZE :: 8;
+GDBHIO_STDIN_FILENO :: 0;
+GDBHIO_STDOUT_FILENO :: 1;
+GDBHIO_STDERR_FILENO :: 2;
 
-C3D_FVUNIF_COUNT :: 96;
-C3D_IVUNIF_COUNT :: 4;
+socklen_t :: u32;
+sa_family_t :: u16;
 
-C3D_DEFAULT_CMDBUF_SIZE :: 0x40000;
+sockaddr :: struct {
+    sa_family: sa_family_t;
+    sa_data:   *u8;
+}
 
-C3DF_LightEnv_IsCP_Any :: 0xFF<<18;
+// biggest size on 3ds is 0x1C (sockaddr_in6)
+sockaddr_storage :: struct {
+    ss_family:    sa_family_t;
+    __ss_padding: [26] u8;
+}
 
-C3DF_LightEnv_LutDirtyAll :: 0x3F<<26;
+linger :: struct {
+    l_onoff:  s32;
+    l_linger: s32;
+}
 
-C2D_DEFAULT_MAX_OBJECTS :: 4096;
+accept :: (sockfd: s32, addr: *sockaddr, addrlen: *socklen_t) -> s32 #foreign libctru;
+bind :: (sockfd: s32, addr: *sockaddr, addrlen: socklen_t) -> s32 #foreign libctru;
+closesocket :: (sockfd: s32) -> s32 #foreign libctru;
+connect :: (sockfd: s32, addr: *sockaddr, addrlen: socklen_t) -> s32 #foreign libctru;
+getpeername :: (sockfd: s32, addr: *sockaddr, addrlen: *socklen_t) -> s32 #foreign libctru;
+getsockname :: (sockfd: s32, addr: *sockaddr, addrlen: *socklen_t) -> s32 #foreign libctru;
+getsockopt :: (sockfd: s32, level: s32, optname: s32, optval: *void, optlen: *socklen_t) -> s32 #foreign libctru;
+listen :: (sockfd: s32, backlog: s32) -> s32 #foreign libctru;
+recv :: (sockfd: s32, buf: *void, len: size_t, flags: s32) -> ssize_t #foreign libctru;
+recvfrom :: (sockfd: s32, buf: *void, len: size_t, flags: s32, src_addr: *sockaddr, addrlen: *socklen_t) -> ssize_t #foreign libctru;
+send :: (sockfd: s32, buf: *void, len: size_t, flags: s32) -> ssize_t #foreign libctru;
+sendto :: (sockfd: s32, buf: *void, len: size_t, flags: s32, dest_addr: *sockaddr, addrlen: socklen_t) -> ssize_t #foreign libctru;
+setsockopt :: (sockfd: s32, level: s32, optname: s32, optval: *void, optlen: socklen_t) -> s32 #foreign libctru;
+shutdown :: (sockfd: s32, how: s32) -> s32 #foreign libctru;
+socket :: (domain: s32, type: s32, protocol: s32) -> s32 #foreign libctru;
+sockatmark :: (sockfd: s32) -> s32 #foreign libctru;
+
+in_addr :: struct {
+    s_addr: in_addr_t;
+}
+
+sockaddr_in :: struct {
+    sin_family: sa_family_t;
+    sin_port:   in_port_t;
+    sin_addr:   in_addr;
+    sin_zero:   [8] u8;
+}
+
+/* Request struct for multicast socket ops */
+ip_mreq :: struct {
+    imr_multiaddr: in_addr; /* IP multicast address of group */
+    imr_interface: in_addr; /* local IP address of interface */
+}
+
+hostent :: struct {
+    h_name:      *u8;
+    h_aliases:   **u8 #align 4;
+    h_addrtype:  s32;
+    h_length:    s32;
+    h_addr_list: **u8;
+    h_addr:      *u8 #align 4;
+}
+
+addrinfo :: struct {
+    ai_flags:     s32;
+    ai_family:    s32;
+    ai_socktype:  s32;
+    ai_protocol:  s32;
+    ai_addrlen:   socklen_t;
+    ai_canonname: *u8 #align 4;
+    ai_addr:      *sockaddr;
+    ai_next:      *addrinfo #align 4;
+}
+
+gethostbyname :: (name: *u8) -> *hostent #foreign libctru;
+gethostbyaddr :: (addr: *void, len: socklen_t, type: s32) -> *hostent #foreign libctru;
+herror :: (s: *u8) -> void #foreign libctru;
+hstrerror :: (err: s32) -> *u8 #foreign libctru;
+
+getnameinfo :: (sa: *sockaddr, salen: socklen_t, host: *u8, hostlen: socklen_t, serv: *u8, servlen: socklen_t, flags: s32) -> s32 #foreign libctru;
+
+getaddrinfo :: (node: *u8, service: *u8, hints: *addrinfo, res: **addrinfo) -> s32 #foreign libctru;
+
+freeaddrinfo :: (ai: *addrinfo) -> void #foreign libctru;
+
+gai_strerror :: (ecode: s32) -> *u8 #foreign libctru;
+
+anon_enum :: enum u16 {
+    CTRU_TCP_OPT :: 8192;
+    TCP_NODELAY  :: 8193;
+    TCP_MAXSEG   :: 8194;
+}
+
+ioctl :: (fd: s32, request: s32, __args: ..Any) -> s32 #foreign libctru;
 
 vu8 :: u8;
 vu16 :: u16;
@@ -1258,7 +1408,7 @@ MemState :: enum u8 {
 }
 
 /// Memory permission flags
-MemPerm :: enum u32 {
+MemPerm :: enum_flags u32 {
     READ        :: 1;
     WRITE       :: 2;
     EXECUTE     :: 4;
@@ -1334,7 +1484,7 @@ DmaState :: enum u8 {
 }
 
 /// Configuration flags for \ref DmaConfig.
-DMACFG :: enum u8 {
+DMACFG :: enum_flags u8 {
     SRC_IS_DEVICE  :: 1;
     DST_IS_DEVICE  :: 2;
     WAIT_AVAILABLE :: 4;
@@ -1344,7 +1494,7 @@ DMACFG :: enum u8 {
 }
 
 /// Configuration flags for \ref svcRestartDma.
-DMARST :: enum u8 {
+DMARST :: enum_flags u8 {
     UNLOCK        :: 1;
     RESUME_DEVICE :: 2;
 }
@@ -1628,7 +1778,7 @@ DebugEventInfo :: struct {
 }
 
 /// Debug flags for an attached process, set by @ref svcContinueDebugEvent
-DebugFlags :: enum u8 {
+DebugFlags :: enum_flags u8 {
     INHIBIT_USER_CPU_EXCEPTION_HANDLERS :: 1;
     SIGNAL_FAULT_EXCEPTION_EVENTS       :: 2;
     SIGNAL_SCHEDULE_EVENTS              :: 4;
@@ -1642,7 +1792,7 @@ ThreadContext :: struct {
 }
 
 /// Control flags for @ref svcGetDebugThreadContext and @ref svcSetDebugThreadContext
-ThreadContextControlFlags :: enum u8 {
+ThreadContextControlFlags :: enum_flags u8 {
     CPU_GPRS :: 1;
     CPU_SPRS :: 2;
     FPU_GPRS :: 4;
@@ -2520,7 +2670,7 @@ svcGetDebugThreadParam :: (unused: *s64, out: *u32, debug: Handle, threadId: u32
 svcBackdoor :: (callback: #type () -> s32 #c_call) -> Result #foreign libctru;
 
 /// ARM9 descriptor flags
-ARM9DESC :: enum u16 {
+ARM9DESC :: enum_flags u16 {
     MOUNT_NAND      :: 1;
     MOUNT_NANDRO_RW :: 2;
     MOUNT_TWLN      :: 4;
@@ -2534,7 +2684,7 @@ ARM9DESC :: enum u16 {
 }
 
 /// Filesystem access flags
-FSACCESS :: enum u32 {
+FSACCESS :: enum_flags u32 {
     CATEGORY_SYSTEM_APPLICATION :: 1;
     CATEGORY_HARDWARE_CHECK     :: 2;
     CATEGORY_FILESYSTEM_TOOL    :: 4;
@@ -3475,28 +3625,28 @@ gspWaitForEvent :: (id: GSPGPU_Event, nextEvent: bool) -> void #foreign libctru;
 gspWaitForAnyEvent :: () -> GSPGPU_Event #foreign libctru;
 
 /// Waits for PSC0
-gspWaitForPSC0 :: () #c_call { gspWaitForEvent(GSPGPU_Event.PSC0, false); }
+gspWaitForPSC0 :: () { gspWaitForEvent(.PSC0, false); }
 
 /// Waits for PSC1
-gspWaitForPSC1 :: () #c_call { gspWaitForEvent(GSPGPU_Event.PSC1, false); }
+gspWaitForPSC1 :: () { gspWaitForEvent(.PSC1, false); }
 
 /// Waits for VBlank.
-gspWaitForVBlank :: () #c_call { gspWaitForVBlank0(); }
+gspWaitForVBlank :: () { gspWaitForVBlank0(); }
 
 /// Waits for VBlank0.
-gspWaitForVBlank0 :: () #c_call { gspWaitForEvent(GSPGPU_Event.VBlank0, true); }
+gspWaitForVBlank0 :: () { gspWaitForEvent(.VBlank0, true); }
 
 /// Waits for VBlank1.
-gspWaitForVBlank1 :: () #c_call { gspWaitForEvent(GSPGPU_Event.VBlank1, true); }
+gspWaitForVBlank1 :: () { gspWaitForEvent(.VBlank1, true); }
 
 /// Waits for PPF.
-gspWaitForPPF :: () #c_call { gspWaitForEvent(GSPGPU_Event.PPF, false); }
+gspWaitForPPF :: () { gspWaitForEvent(.PPF, false); }
 
 /// Waits for P3D.
-gspWaitForP3D :: () #c_call { gspWaitForEvent(GSPGPU_Event.P3D, false); }
+gspWaitForP3D :: () { gspWaitForEvent(.P3D, false); }
 
 /// Waits for DMA.
-gspWaitForDMA :: () #c_call { gspWaitForEvent(GSPGPU_Event.DMA, false); }
+gspWaitForDMA :: () { gspWaitForEvent(.DMA, false); }
 
 /**
 * @brief Submits a GX command.
@@ -3861,7 +4011,7 @@ consoleDebugInit :: (device: debugDevice) -> void #foreign libctru;
 consoleClear :: () -> void #foreign libctru;
 
 /// System run-flags.
-RUNFLAG :: enum u8 {
+RUNFLAG :: enum_flags u8 {
     APTWORKAROUND :: 1;
     APTREINIT     :: 2;
     APTCHAINLOAD  :: 4;
@@ -4384,20 +4534,20 @@ ACU_SetRequestEulaVersion :: (config: *acuConfig) -> Result #foreign libctru;
 ACU_ConnectAsync :: (config: *acuConfig, connectionHandle: Handle) -> Result #foreign libctru;
 
 /// Open flags.
-FS_OPEN :: enum u8 {
+FS_OPEN :: enum_flags u8 {
     READ   :: 1;
     WRITE  :: 2;
     CREATE :: 4;
 }
 
 /// Write flags.
-FS_WRITE :: enum u16 {
+FS_WRITE :: enum_flags u16 {
     FLUSH       :: 1;
     UPDATE_TIME :: 256;
 }
 
 /// Attribute flags.
-FS_ATTRIBUTE :: enum u32 {
+FS_ATTRIBUTE :: enum_flags u32 {
     DIRECTORY :: 1;
     HIDDEN    :: 256;
     ARCHIVE   :: 65536;
@@ -5447,7 +5597,7 @@ AM_TitleEntry :: struct {
 }
 
 /// Pending title status mask values.
-AM_STATUS_MASK :: enum u8 {
+AM_STATUS_MASK :: enum_flags u8 {
     INSTALLING            :: 1;
     AWAITING_FINALIZATION :: 2;
 }
@@ -5470,7 +5620,7 @@ AM_PendingTitleEntry :: struct {
 }
 
 /// Pending title deletion flags.
-AM_DELETE_PENDING :: enum u8 {
+AM_DELETE_PENDING :: enum_flags u8 {
     NON_SYSTEM :: 1;
     SYSTEM     :: 2;
 }
@@ -5494,7 +5644,7 @@ AM_ContentInfo :: struct {
 }
 
 /// Title ContentInfo flags.
-AM_ContentInfoFlags :: enum u8 {
+AM_ContentInfoFlags :: enum_flags u8 {
     DOWNLOADED :: 1;
     OWNED      :: 2;
 }
@@ -8128,7 +8278,7 @@ CSND_LOOPMODE :: enum u8 {
 }
 
 /// Sound flags.
-SOUND :: enum u16 {
+SOUND :: enum_flags u16 {
     LINEAR_INTERP :: 64;
     REPEAT        :: 1024;
     ONE_SHOT      :: 2048;
@@ -10592,7 +10742,7 @@ udsNetworkScanInfo :: struct {
     nodes:           [16] udsNodeInfo;
 }
 
-UDSNETATTR :: enum u16 {
+UDSNETATTR :: enum_flags u16 {
     DisableConnectSpectators :: 1;
     DisableConnectClients    :: 2;
     x4                       :: 4;
@@ -11243,7 +11393,7 @@ NS_TerminateProcessTID :: (titleid: u64, timeout: u64) -> Result #foreign libctr
 NS_RebootSystem :: () -> Result #foreign libctru;
 
 /// Launch flags for PM launch commands.
-PMLAUNCHFLAG :: enum u32 {
+PMLAUNCHFLAG :: enum_flags u32 {
     NORMAL_APPLICATION            :: 1;
     LOAD_DEPENDENCIES             :: 2;
     NOTIFY_TERMINATION            :: 4;
@@ -11777,59 +11927,6 @@ PXIPM_RegisterProgram :: (programHandle: *u64, programInfo: *FS_ProgramInfo, upd
 * @param programHandle The program handle.
 */
 PXIPM_UnregisterProgram :: (programHandle: u64) -> Result #foreign libctru;
-
-socklen_t :: u32;
-sa_family_t :: u16;
-
-sockaddr :: struct {
-    sa_family: sa_family_t;
-    sa_data:   *u8;
-}
-
-// biggest size on 3ds is 0x1C (sockaddr_in6)
-sockaddr_storage :: struct {
-    ss_family:    sa_family_t;
-    __ss_padding: [26] u8;
-}
-
-linger :: struct {
-    l_onoff:  s32;
-    l_linger: s32;
-}
-
-accept :: (sockfd: s32, addr: *sockaddr, addrlen: *socklen_t) -> s32 #foreign libctru;
-bind :: (sockfd: s32, addr: *sockaddr, addrlen: socklen_t) -> s32 #foreign libctru;
-closesocket :: (sockfd: s32) -> s32 #foreign libctru;
-connect :: (sockfd: s32, addr: *sockaddr, addrlen: socklen_t) -> s32 #foreign libctru;
-getpeername :: (sockfd: s32, addr: *sockaddr, addrlen: *socklen_t) -> s32 #foreign libctru;
-getsockname :: (sockfd: s32, addr: *sockaddr, addrlen: *socklen_t) -> s32 #foreign libctru;
-getsockopt :: (sockfd: s32, level: s32, optname: s32, optval: *void, optlen: *socklen_t) -> s32 #foreign libctru;
-listen :: (sockfd: s32, backlog: s32) -> s32 #foreign libctru;
-recv :: (sockfd: s32, buf: *void, len: size_t, flags: s32) -> ssize_t #foreign libctru;
-recvfrom :: (sockfd: s32, buf: *void, len: size_t, flags: s32, src_addr: *sockaddr, addrlen: *socklen_t) -> ssize_t #foreign libctru;
-send :: (sockfd: s32, buf: *void, len: size_t, flags: s32) -> ssize_t #foreign libctru;
-sendto :: (sockfd: s32, buf: *void, len: size_t, flags: s32, dest_addr: *sockaddr, addrlen: socklen_t) -> ssize_t #foreign libctru;
-setsockopt :: (sockfd: s32, level: s32, optname: s32, optval: *void, optlen: socklen_t) -> s32 #foreign libctru;
-shutdown :: (sockfd: s32, how: s32) -> s32 #foreign libctru;
-socket :: (domain: s32, type: s32, protocol: s32) -> s32 #foreign libctru;
-sockatmark :: (sockfd: s32) -> s32 #foreign libctru;
-
-in_addr :: struct {
-    s_addr: in_addr_t;
-}
-
-sockaddr_in :: struct {
-    sin_family: sa_family_t;
-    sin_port:   in_port_t;
-    sin_addr:   in_addr;
-    sin_zero:   [8] u8;
-}
-
-/* Request struct for multicast socket ops */
-ip_mreq :: struct {
-    imr_multiaddr: in_addr; /* IP multicast address of group */
-    imr_interface: in_addr; /* local IP address of interface */
-}
 
 /// Options to be used with @ref SOCU_GetNetworkOpt
 NetworkOpt :: enum u16 {
@@ -12725,7 +12822,7 @@ GX_TRANSFER_SCALE :: enum u8 {
 }
 
 /// GX transfer control flags
-GX_FILL_CONTROL :: enum u16 {
+GX_FILL_CONTROL :: enum_flags u16 {
     TRIGGER      :: 1;
     FINISHED     :: 2;
     _16BIT_DEPTH :: 0;
@@ -12752,8 +12849,8 @@ tag_gxCmdQueue_s :: struct {
     numEntries: u16; ///< Number of commands in the queue
     curEntry:   u16; ///< Index of the first pending command to be submitted to GX
     lastEntry:  u16; ///< Number of commands completed by GX
-    CALLBACK_T :: #type (unknown0: *tag_gxCmdQueue_s) -> void #c_call;
-    callback:   CALLBACK_T #align 4; ///< User callback
+    __callback_t :: #type (unknown0: *tag_gxCmdQueue_s) -> void #c_call;
+    callback:   __callback_t #align 4; ///< User callback
     user:       *void; ///< Data for user callback
 }
 
@@ -12887,7 +12984,7 @@ GPU_TEXTURE_MODE_PARAM :: enum u8 {
 }
 
 /// Supported texture units.
-GPU_TEXUNIT :: enum u8 {
+GPU_TEXUNIT :: enum_flags u8 {
     TEXUNIT0 :: 1;
     TEXUNIT1 :: 2;
     TEXUNIT2 :: 4;
@@ -13035,7 +13132,7 @@ GPU_STENCILOP :: enum u8 {
 }
 
 /// Pixel write mask.
-GPU_WRITEMASK :: enum u8 {
+GPU_WRITEMASK :: enum_flags u8 {
     RED   :: 1;
     GREEN :: 2;
     BLUE  :: 4;
@@ -13327,7 +13424,7 @@ DVLE_type :: enum u8 {
 /// Constant type.
 DVLE_constantType :: enum u8 {
     BOOL    :: 0;
-    u8      :: 1;
+    U8      :: 1;
     FLOAT24 :: 2;
 }
 
@@ -13741,7 +13838,7 @@ NDSP_ENCODING :: enum u8 {
 }
 
 /// Channel format flags for use with ndspChnSetFormat.
-NDSP :: enum u8 {
+NDSP :: enum_flags u8 {
     FORMAT_MONO_PCM8          :: 1;
     FORMAT_MONO_PCM16         :: 5;
     FORMAT_MONO_ADPCM         :: 9;
@@ -13988,7 +14085,7 @@ SwkbdPasswordMode :: enum u8 {
 }
 
 /// Keyboard input filtering flags.
-SWKBD_FILTER :: enum u8 {
+SWKBD_FILTER :: enum_flags u8 {
     DIGITS    :: 1;
     AT        :: 2;
     PERCENT   :: 4;
@@ -13998,7 +14095,7 @@ SWKBD_FILTER :: enum u8 {
 }
 
 /// Keyboard features.
-SWKBD :: enum u16 {
+SWKBD :: enum_flags u16 {
     PARENTAL          :: 1;
     DARKEN_TOP_SCREEN :: 2;
     PREDICTIVE_INPUT  :: 4;
@@ -14725,1405 +14822,151 @@ gdbHioDevSystem :: (command: *u8) -> s32 #foreign libctru;
 */
 link3dsConnectToHost :: (redirStdout: bool, redirStderr: bool) -> s32 #foreign libctru;
 
-C3D_IVec :: u32;
+htonl :: (hostlong: u32) -> u32 #foreign libctru;
 
-/**
-* @struct C3D_FVec
-* @brief Float vector
-*
-* Matches PICA layout
-*/
-C3D_FVec :: union {
-    /**
-    * @brief Vector access
-    */
-    struct {
-        w: float; ///< W-component
-        z: float; ///< Z-component
-        y: float; ///< Y-component
-        x: float; ///< X-component
-    }
-    /**
-    * @brief Quaternion access
-    */
-    struct {
-        r: float; ///< Real component
-        k: float; ///< K-component
-        j: float; ///< J-component
-        i: float; ///< I-component
-    }
-    /**
-    * @brief Raw access
-    */
-    c: [4] float;
+htons :: (hostshort: u16) -> u16 #foreign libctru;
+
+ntohl :: (netlong: u32) -> u32 #foreign libctru;
+
+ntohs :: (netshort: u16) -> u16 #foreign libctru;
+
+inet_addr :: (cp: *u8) -> in_addr_t #foreign libctru;
+inet_aton :: (cp: *u8, inp: *in_addr) -> s32 #foreign libctru;
+inet_ntoa :: (in: in_addr) -> *u8 #foreign libctru;
+
+inet_ntop :: (af: s32, src: *void, dst: *u8, size: socklen_t) -> *u8 #foreign libctru;
+inet_pton :: (af: s32, src: *u8, dst: *void) -> s32 #foreign libctru;
+
+nfds_t :: u32;
+
+pollfd :: struct {
+    fd:      s32;
+    events:  s32;
+    revents: s32;
+}
+
+poll :: (fds: *pollfd, nfsd: nfds_t, timeout: s32) -> s32 #foreign libctru;
+
+rbtree_t :: rbtree;
+rbtree_node_t :: rbtree_node;
+
+rbtree_node_destructor_t :: #type (Node: *rbtree_node_t) -> void #c_call;
+rbtree_node_comparator_t :: #type (lhs: *rbtree_node_t, rhs: *rbtree_node_t) -> s32 #c_call;
+
+/// An rbtree node.
+rbtree_node :: struct {
+    parent_color: uintptr_t; ///< Parent color.
+    child:        [2] *rbtree_node_t #align 4; ///< Node children.
+}
+
+/// An rbtree.
+rbtree :: struct {
+    root:       *rbtree_node_t; ///< Root node.
+    comparator: rbtree_node_comparator_t #align 4; ///< Node comparator.
+    size:       size_t; ///< Size.
 }
 
 /**
-* @struct C3D_FQuat
-* @brief Float quaternion. See @ref C3D_FVec.
+* @brief Initializes an rbtree.
+* @param tree Pointer to the tree.
+* @param comparator Comparator to use.
 */
-C3D_FQuat :: C3D_FVec;
+rbtree_init :: (tree: *rbtree_t, comparator: rbtree_node_comparator_t) -> void #foreign libctru;
 
 /**
-* @struct C3D_Mtx
-* @brief Row-major 4x4 matrix
+* @brief Gets whether an rbtree is empty
+* @param tree Pointer to the tree.
+* @return A non-zero value if the tree is not empty.
 */
-C3D_Mtx :: union {
-    r: [4] C3D_FVec; ///< Rows are vectors
-    m: [16] float; ///< Raw access
-}
+rbtree_empty :: (tree: *rbtree_t) -> s32 #foreign libctru;
 
 /**
-*@brief Transposes the matrix. Row => Column, and vice versa.
-*@param[in,out] out     Output matrix.
+* @brief Gets the size of an rbtree.
+* @param tree Pointer to the tree.
 */
-Mtx_Transpose :: (out: *C3D_Mtx) -> void #foreign libcitro3d;
+rbtree_size :: (tree: *rbtree_t) -> size_t #foreign libctru;
 
 /**
-* @brief Multiply two matrices
-* @param[out] out Output matrix
-* @param[in]  a   Multiplicand
-* @param[in]  b   Multiplier
+* @brief Inserts a node into an rbtree.
+* @param tree Pointer to the tree.
+* @param node Pointer to the node.
+* @return The inserted node.
 */
-Mtx_Multiply :: (out: *C3D_Mtx, a: *C3D_Mtx, b: *C3D_Mtx) -> void #foreign libcitro3d;
+rbtree_insert :: (tree: *rbtree_t, node: *rbtree_node_t) -> *rbtree_node_t #foreign libctru;
 
 /**
-* @brief Inverse a matrix
-* @param[in,out] out Matrix to inverse
-* @retval 0.0f Degenerate matrix (no inverse)
-* @return determinant
+* @brief Inserts multiple nodes into an rbtree.
+* @param tree Pointer to the tree.
+* @param node Pointer to the nodes.
 */
-Mtx_Inverse :: (out: *C3D_Mtx) -> float #foreign libcitro3d;
+rbtree_insert_multi :: (tree: *rbtree_t, node: *rbtree_node_t) -> void #foreign libctru;
 
 /**
-* @brief Multiply 3x3 matrix by a FVec3
-* @param[in] mtx Matrix
-* @param[in] v   Vector
-* @return mtx*v (product)
+* @brief Finds a node within an rbtree.
+* @param tree Pointer to the tree.
+* @param node Pointer to the node.
+* @return The located node.
 */
-Mtx_MultiplyFVec3 :: (mtx: *C3D_Mtx, v: C3D_FVec) -> C3D_FVec #foreign libcitro3d;
+rbtree_find :: (tree: *rbtree_t, node: *rbtree_node_t) -> *rbtree_node_t #foreign libctru;
 
 /**
-* @brief Multiply 4x4 matrix by a FVec4
-* @param[in] mtx Matrix
-* @param[in] v   Vector
-* @return mtx*v (product)
+* @brief Gets the minimum node of an rbtree.
+* @param tree Pointer to the tree.
+* @return The minimum node.
 */
-Mtx_MultiplyFVec4 :: (mtx: *C3D_Mtx, v: C3D_FVec) -> C3D_FVec #foreign libcitro3d;
+rbtree_min :: (tree: *rbtree_t) -> *rbtree_node_t #foreign libctru;
 
 /**
-* @brief Get 4x4 matrix equivalent to Quaternion
-* @param[out] m Output matrix
-* @param[in]  q Input Quaternion
+* @brief Gets the maximum node of an rbtree.
+* @param tree Pointer to the tree.
+* @return The maximum node.
 */
-Mtx_FromQuat :: (m: *C3D_Mtx, q: C3D_FQuat) -> void #foreign libcitro3d;
+rbtree_max :: (tree: *rbtree_t) -> *rbtree_node_t #foreign libctru;
 
 /**
-* @brief 3D translation
-* @param[in,out] mtx Matrix to translate
-* @param[in]     x            X component to translate
-* @param[in]     y            Y component to translate
-* @param[in]     z            Z component to translate
-* @param[in]     bRightSide   Whether to transform from the right side
+* @brief Gets the next node from an rbtree node.
+* @param node Pointer to the node.
+* @return The next node.
 */
-Mtx_Translate :: (mtx: *C3D_Mtx, x: float, y: float, z: float, bRightSide: bool) -> void #foreign libcitro3d;
+rbtree_node_next :: (node: *rbtree_node_t) -> *rbtree_node_t #foreign libctru;
 
 /**
-* @brief 3D Scale
-* @param[in,out] mtx Matrix to scale
-* @param[in]     x   X component to scale
-* @param[in]     y   Y component to scale
-* @param[in]     z   Z component to scale
+* @brief Gets the previous node from an rbtree node.
+* @param node Pointer to the node.
+* @return The previous node.
 */
-Mtx_Scale :: (mtx: *C3D_Mtx, x: float, y: float, z: float) -> void #foreign libcitro3d;
+rbtree_node_prev :: (node: *rbtree_node_t) -> *rbtree_node_t #foreign libctru;
 
 /**
-* @brief 3D Rotation
-* @param[in,out] mtx        Matrix to rotate
-* @param[in]     axis       Axis about which to rotate
-* @param[in]     angle      Radians to rotate
-* @param[in]     bRightSide Whether to transform from the right side
+* @brief Removes a node from an rbtree.
+* @param tree Pointer to the tree.
+* @param node Pointer to the node.
+* @param destructor Destructor to use when removing the node.
+* @return The removed node.
 */
-Mtx_Rotate :: (mtx: *C3D_Mtx, axis: C3D_FVec, angle: float, bRightSide: bool) -> void #foreign libcitro3d;
+rbtree_remove :: (tree: *rbtree_t, node: *rbtree_node_t, destructor: rbtree_node_destructor_t) -> *rbtree_node_t #foreign libctru;
 
 /**
-* @brief 3D Rotation about the X axis
-* @param[in,out] mtx        Matrix to rotate
-* @param[in]     angle      Radians to rotate
-* @param[in]     bRightSide Whether to transform from the right side
-*/
-Mtx_RotateX :: (mtx: *C3D_Mtx, angle: float, bRightSide: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief 3D Rotation about the Y axis
-* @param[in,out] mtx        Matrix to rotate
-* @param[in]     angle      Radians to rotate
-* @param[in]     bRightSide Whether to transform from the right side
-*/
-Mtx_RotateY :: (mtx: *C3D_Mtx, angle: float, bRightSide: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief 3D Rotation about the Z axis
-* @param[in,out] mtx        Matrix to rotate
-* @param[in]     angle      Radians to rotate
-* @param[in]     bRightSide Whether to transform from the right side
-*/
-Mtx_RotateZ :: (mtx: *C3D_Mtx, angle: float, bRightSide: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Orthogonal projection
-* @param[out] mtx Output matrix
-* @param[in]  left         Left clip plane (X=left)
-* @param[in]  right        Right clip plane (X=right)
-* @param[in]  bottom       Bottom clip plane (Y=bottom)
-* @param[in]  top          Top clip plane (Y=top)
-* @param[in]  near         Near clip plane (Z=near)
-* @param[in]  far          Far clip plane (Z=far)
-* @param[in]  isLeftHanded Whether to build a LH projection
-* @sa Mtx_OrthoTilt
-*/
-Mtx_Ortho :: (mtx: *C3D_Mtx, left: float, right: float, bottom: float, top: float, near: float, far: float, isLeftHanded: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Perspective projection
-* @param[out] mtx          Output matrix
-* @param[in]  fovy         Vertical field of view in radians
-* @param[in]  aspect       Aspect ration of projection plane (width/height)
-* @param[in]  near         Near clip plane (Z=near)
-* @param[in]  far          Far clip plane (Z=far)
-* @param[in]  isLeftHanded Whether to build a LH projection
-* @sa Mtx_PerspTilt
-* @sa Mtx_PerspStereo
-* @sa Mtx_PerspStereoTilt
-*/
-Mtx_Persp :: (mtx: *C3D_Mtx, fovy: float, aspect: float, near: float, far: float, isLeftHanded: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Stereo perspective projection
-* @note Typically you will use iod to mean the distance between the eyes. Plug
-*       in -iod for the left eye and iod for the right eye.
-* @note The focal length is defined by screen. If objects are further than this,
-*       they will appear to be inside the screen. If objects are closer than this,
-*       they will appear to pop out of the screen. Objects at this distance appear
-*       to be at the screen.
-* @param[out] mtx          Output matrix
-* @param[in]  fovy         Vertical field of view in radians
-* @param[in]  aspect       Aspect ration of projection plane (width/height)
-* @param[in]  near         Near clip plane (Z=near)
-* @param[in]  far          Far clip plane (Z=far)
-* @param[in]  iod          Interocular distance
-* @param[in]  screen       Focal length
-* @param[in]  isLeftHanded Whether to build a LH projection
-* @sa Mtx_Persp
-* @sa Mtx_PerspTilt
-* @sa Mtx_PerspStereoTilt
-*/
-Mtx_PerspStereo :: (mtx: *C3D_Mtx, fovy: float, aspect: float, near: float, far: float, iod: float, screen: float, isLeftHanded: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Orthogonal projection, tilted to account for the 3DS screen rotation
-* @param[out] mtx          Output matrix
-* @param[in]  left         Left clip plane (X=left)
-* @param[in]  right        Right clip plane (X=right)
-* @param[in]  bottom       Bottom clip plane (Y=bottom)
-* @param[in]  top          Top clip plane (Y=top)
-* @param[in]  near         Near clip plane (Z=near)
-* @param[in]  far          Far clip plane (Z=far)
-* @param[in]  isLeftHanded Whether to build a LH projection
-* @sa Mtx_Ortho
-*/
-Mtx_OrthoTilt :: (mtx: *C3D_Mtx, left: float, right: float, bottom: float, top: float, near: float, far: float, isLeftHanded: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Perspective projection, tilted to account for the 3DS screen rotation
-* @param[out] mtx          Output matrix
-* @param[in]  fovy         Vertical field of view in radians
-* @param[in]  aspect       Aspect ration of projection plane (width/height)
-* @param[in]  near         Near clip plane (Z=near)
-* @param[in]  far          Far clip plane (Z=far)
-* @param[in]  isLeftHanded Whether to build a LH projection
-* @sa Mtx_Persp
-* @sa Mtx_PerspStereo
-* @sa Mtx_PerspStereoTilt
-*/
-Mtx_PerspTilt :: (mtx: *C3D_Mtx, fovy: float, aspect: float, near: float, far: float, isLeftHanded: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Stereo perspective projection, tilted to account for the 3DS screen rotation
-* @note See the notes for @ref Mtx_PerspStereo
-* @param[out] mtx          Output matrix
-* @param[in]  fovy         Vertical field of view in radians
-* @param[in]  aspect       Aspect ration of projection plane (width/height)
-* @param[in]  near         Near clip plane (Z=near)
-* @param[in]  far          Far clip plane (Z=far)
-* @param[in]  iod          Interocular distance
-* @param[in]  screen       Focal length
-* @param[in]  isLeftHanded Whether to build a LH projection
-* @sa Mtx_Persp
-* @sa Mtx_PerspTilt
-* @sa Mtx_PerspStereo
-*/
-Mtx_PerspStereoTilt :: (mtx: *C3D_Mtx, fovy: float, aspect: float, near: float, far: float, iod: float, screen: float, isLeftHanded: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Look-At matrix, based on DirectX implementation
-* @note See https://msdn.microsoft.com/en-us/library/windows/desktop/bb205342
-* @param[out] out            Output matrix.
-* @param[in]  cameraPosition Position of the intended camera in 3D space.
-* @param[in]  cameraTarget   Position of the intended target the camera is supposed to face in 3D space.
-* @param[in]  cameraUpVector The vector that points straight up depending on the camera's "Up" direction.
-* @param[in]  isLeftHanded   Whether to build a LH projection
-*/
-Mtx_LookAt :: (out: *C3D_Mtx, cameraPosition: C3D_FVec, cameraTarget: C3D_FVec, cameraUpVector: C3D_FVec, isLeftHanded: bool) -> void #foreign libcitro3d;
-
-/**
-* @brief Multiply two Quaternions
-* @param[in] lhs Multiplicand
-* @param[in] rhs Multiplier
-* @return lhs*rhs
-*/
-Quat_Multiply :: (lhs: C3D_FQuat, rhs: C3D_FQuat) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief Raise Quaternion to a power
-* @note If p is 0, this returns the identity Quaternion.
-*       If p is 1, this returns q.
-* @param[in] q Base Quaternion
-* @param[in] p Power
-* @return q<sup>p</sup>
-*/
-Quat_Pow :: (q: C3D_FQuat, p: float) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief Cross product of Quaternion and FVec3
-* @param[in] q Base Quaternion
-* @param[in] v Vector to cross
-* @return q×v
-*/
-Quat_CrossFVec3 :: (q: C3D_FQuat, v: C3D_FVec) -> C3D_FVec #foreign libcitro3d;
-
-/**
-* @brief 3D Rotation
-* @param[in] q          Quaternion to rotate
-* @param[in] axis       Axis about which to rotate
-* @param[in] r          Radians to rotate
-* @param[in] bRightSide Whether to transform from the right side
-* @return Rotated Quaternion
-*/
-Quat_Rotate :: (q: C3D_FQuat, axis: C3D_FVec, r: float, bRightSide: bool) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief 3D Rotation about the X axis
-* @param[in] q          Quaternion to rotate
-* @param[in] r          Radians to rotate
-* @param[in] bRightSide Whether to transform from the right side
-* @return Rotated Quaternion
-*/
-Quat_RotateX :: (q: C3D_FQuat, r: float, bRightSide: bool) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief 3D Rotation about the Y axis
-* @param[in] q          Quaternion to rotate
-* @param[in] r          Radians to rotate
-* @param[in] bRightSide Whether to transform from the right side
-* @return Rotated Quaternion
-*/
-Quat_RotateY :: (q: C3D_FQuat, r: float, bRightSide: bool) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief 3D Rotation about the Z axis
-* @param[in] q          Quaternion to rotate
-* @param[in] r          Radians to rotate
-* @param[in] bRightSide Whether to transform from the right side
-* @return Rotated Quaternion
-*/
-Quat_RotateZ :: (q: C3D_FQuat, r: float, bRightSide: bool) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief Get Quaternion equivalent to 4x4 matrix
-* @note If the matrix is orthogonal or special orthogonal, where determinant(matrix) = +1.0f, then the matrix can be converted.
-* @param[in]   m Input  Matrix
-* @return      Generated Quaternion
-*/
-Quat_FromMtx :: (m: *C3D_Mtx) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief Converting Pitch, Yaw, and Roll to Quaternion equivalent
-* @param[in] pitch      The pitch angle in radians.
-* @param[in] yaw        The yaw angle in radians.
-* @param[in] roll       The roll angle in radians.
-* @param[in] bRightSide Whether to transform from the right side
-* @return    C3D_FQuat  The Quaternion equivalent with the pitch, yaw, and roll (in that order) orientations applied.
-*/
-Quat_FromPitchYawRoll :: (pitch: float, yaw: float, roll: float, bRightSide: bool) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief Quaternion Look-At
-* @param[in] source   C3D_FVec Starting position. Origin of rotation.
-* @param[in] target   C3D_FVec Target position to orient towards.
-* @param[in] forwardVector C3D_FVec The Up vector.
-* @param[in] upVector C3D_FVec The Up vector.
-* @return Quaternion rotation.
-*/
-Quat_LookAt :: (source: C3D_FVec, target: C3D_FVec, forwardVector: C3D_FVec, upVector: C3D_FVec) -> C3D_FQuat #foreign libcitro3d;
-
-/**
-* @brief Quaternion, created from a given axis and angle in radians.
-* @param[in] axis  C3D_FVec The axis to rotate around at.
-* @param[in] angle float The angle to rotate. Unit: Radians
-* @return Quaternion rotation based on the axis and angle. Axis doesn't have to be orthogonal.
-*/
-Quat_FromAxisAngle :: (axis: C3D_FVec, angle: float) -> C3D_FQuat #foreign libcitro3d;
-
-C3D_MtxStack :: struct {
-    m:        [8] C3D_Mtx;
-    pos:      s32;
-    unifType: u8;
-    unifPos:  u8;
-    unifLen:  u8;
-    isDirty:  bool;
-}
-
-MtxStack_Init :: (stk: *C3D_MtxStack) -> void #foreign libcitro3d;
-MtxStack_Bind :: (stk: *C3D_MtxStack, unifType: GPU_SHADER_TYPE, unifPos: s32, unifLen: s32) -> void #foreign libcitro3d;
-MtxStack_Push :: (stk: *C3D_MtxStack) -> *C3D_Mtx #foreign libcitro3d;
-MtxStack_Pop :: (stk: *C3D_MtxStack) -> *C3D_Mtx #foreign libcitro3d;
-MtxStack_Update :: (stk: *C3D_MtxStack) -> void #foreign libcitro3d;
-
-C3D_UpdateUniforms :: (type: GPU_SHADER_TYPE) -> void #foreign libcitro3d;
-
-C3D_AttrInfo :: struct {
-    flags:       [2] u32;
-    permutation: u64;
-    attrCount:   s32;
-}
-
-AttrInfo_Init :: (info: *C3D_AttrInfo) -> void #foreign libcitro3d;
-AttrInfo_AddLoader :: (info: *C3D_AttrInfo, regId: s32, format: GPU_FORMATS, count: s32) -> s32 #foreign libcitro3d;
-AttrInfo_AddFixed :: (info: *C3D_AttrInfo, regId: s32) -> s32 #foreign libcitro3d;
-
-C3D_GetAttrInfo :: () -> *C3D_AttrInfo #foreign libcitro3d;
-C3D_SetAttrInfo :: (info: *C3D_AttrInfo) -> void #foreign libcitro3d;
-
-C3D_BufCfg :: struct {
-    offset: u32;
-    flags:  [2] u32;
-}
-
-C3D_BufInfo :: struct {
-    base_paddr: u32;
-    bufCount:   s32;
-    buffers:    [12] C3D_BufCfg;
-}
-
-BufInfo_Init :: (info: *C3D_BufInfo) -> void #foreign libcitro3d;
-BufInfo_Add :: (info: *C3D_BufInfo, data: *void, stride: ptrdiff_t, attribCount: s32, permutation: u64) -> s32 #foreign libcitro3d;
-
-C3D_GetBufInfo :: () -> *C3D_BufInfo #foreign libcitro3d;
-C3D_SetBufInfo :: (info: *C3D_BufInfo) -> void #foreign libcitro3d;
-
-C3D_UNSIGNED :: enum u8 {
-    BYTE  :: 0;
-    SHORT :: 1;
-}
-
-C3D_Init :: (cmdBufSize: size_t) -> bool #foreign libcitro3d;
-C3D_Fini :: () -> void #foreign libcitro3d;
-
-C3D_GetCmdBufUsage :: () -> float #foreign libcitro3d;
-
-C3D_BindProgram :: (program: *shaderProgram_s) -> void #foreign libcitro3d;
-
-C3D_SetViewport :: (x: u32, y: u32, w: u32, h: u32) -> void #foreign libcitro3d;
-C3D_SetScissor :: (mode: GPU_SCISSORMODE, left: u32, top: u32, right: u32, bottom: u32) -> void #foreign libcitro3d;
-
-C3D_DrawArrays :: (primitive: GPU_Primitive_t, first: s32, size: s32) -> void #foreign libcitro3d;
-C3D_DrawElements :: (primitive: GPU_Primitive_t, count: s32, type: s32, indices: *void) -> void #foreign libcitro3d;
-
-// Immediate-mode vertex submission
-C3D_ImmDrawBegin :: (primitive: GPU_Primitive_t) -> void #foreign libcitro3d;
-C3D_ImmSendAttrib :: (x: float, y: float, z: float, w: float) -> void #foreign libcitro3d;
-C3D_ImmDrawEnd :: () -> void #foreign libcitro3d;
-
-// Fixed vertex attributes
-C3D_FixedAttribGetWritePtr :: (id: s32) -> *C3D_FVec #foreign libcitro3d;
-
-C3D_TexEnv :: struct {
-    srcRgb:     u16;
-    srcAlpha:   u16;
-    union {
-        opAll: u32;
-        struct {
-            opRgb:   u32;
-            #place opRgb; /*bitfield 12*/ opAlpha: u32;
-        }
-    }
-    funcRgb:    u16;
-    funcAlpha:  u16;
-    color:      u32;
-    scaleRgb:   u16;
-    scaleAlpha: u16;
-}
-
-C3D_TexEnvMode :: enum u8 {
-    RGB   :: 1;
-    Alpha :: 2;
-    Both  :: 3;
-}
-
-C3D_GetTexEnv :: (id: s32) -> *C3D_TexEnv #foreign libcitro3d;
-C3D_SetTexEnv :: (id: s32, env: *C3D_TexEnv) -> void #foreign libcitro3d;
-C3D_DirtyTexEnv :: (env: *C3D_TexEnv) -> void #foreign libcitro3d;
-
-C3D_TexEnvBufUpdate :: (mode: s32, mask: s32) -> void #foreign libcitro3d;
-C3D_TexEnvBufColor :: (color: u32) -> void #foreign libcitro3d;
-
-C3D_DepthMap :: (bIsZBuffer: bool, zScale: float, zOffset: float) -> void #foreign libcitro3d;
-C3D_CullFace :: (mode: GPU_CULLMODE) -> void #foreign libcitro3d;
-C3D_StencilTest :: (enable: bool, function: GPU_TESTFUNC, ref: s32, inputMask: s32, writeMask: s32) -> void #foreign libcitro3d;
-C3D_StencilOp :: (sfail: GPU_STENCILOP, dfail: GPU_STENCILOP, pass: GPU_STENCILOP) -> void #foreign libcitro3d;
-C3D_BlendingColor :: (color: u32) -> void #foreign libcitro3d;
-C3D_EarlyDepthTest :: (enable: bool, function: GPU_EARLYDEPTHFUNC, ref: u32) -> void #foreign libcitro3d;
-C3D_DepthTest :: (enable: bool, function: GPU_TESTFUNC, writemask: GPU_WRITEMASK) -> void #foreign libcitro3d;
-C3D_AlphaTest :: (enable: bool, function: GPU_TESTFUNC, ref: s32) -> void #foreign libcitro3d;
-C3D_AlphaBlend :: (colorEq: GPU_BLENDEQUATION, alphaEq: GPU_BLENDEQUATION, srcClr: GPU_BLENDFACTOR, dstClr: GPU_BLENDFACTOR, srcAlpha: GPU_BLENDFACTOR, dstAlpha: GPU_BLENDFACTOR) -> void #foreign libcitro3d;
-C3D_ColorLogicOp :: (op: GPU_LOGICOP) -> void #foreign libcitro3d;
-C3D_FragOpMode :: (mode: GPU_FRAGOPMODE) -> void #foreign libcitro3d;
-C3D_FragOpShadow :: (scale: float, bias: float) -> void #foreign libcitro3d;
-
-C3D_TexCube :: struct {
-    data: [6] *void;
-}
-
-C3D_Tex :: struct {
-    union {
-        data: *void;
-        cube: *C3D_TexCube;
-    }
-    fmt:    GPU_TEXCOLOR;
-    size:   size_t;
-    union {
-        dim: u32;
-        struct {
-            height: u16;
-            width:  u16;
-        }
-    }
-    param:  u32;
-    border: u32;
-    union {
-        lodParam: u32;
-        struct {
-            lodBias:  u16;
-            maxLevel: u8;
-            minLevel: u8;
-        }
-    }
-}
-
-C3D_TexInitParams :: struct {
-    width:    u16;
-    height:   u16;
-    maxLevel: u8;
-    format:   GPU_TEXCOLOR;
-    type:     GPU_TEXTURE_MODE_PARAM;
-    onVram:   bool;
-}
-
-C3D_TexInitWithParams :: (tex: *C3D_Tex, cube: *C3D_TexCube, p: C3D_TexInitParams) -> bool #foreign libcitro3d;
-C3D_TexLoadImage :: (tex: *C3D_Tex, data: *void, face: GPU_TEXFACE, level: s32) -> void #foreign libcitro3d;
-C3D_TexGenerateMipmap :: (tex: *C3D_Tex, face: GPU_TEXFACE) -> void #foreign libcitro3d;
-C3D_TexBind :: (unitId: s32, tex: *C3D_Tex) -> void #foreign libcitro3d;
-C3D_TexFlush :: (tex: *C3D_Tex) -> void #foreign libcitro3d;
-C3D_TexDelete :: (tex: *C3D_Tex) -> void #foreign libcitro3d;
-
-C3D_TexShadowParams :: (perspective: bool, bias: float) -> void #foreign libcitro3d;
-
-C3D_ProcTexColorLut :: struct {
-    color: [256] u32;
-    diff:  [256] u32;
-}
-
-C3D_ProcTex :: struct {
-    union {
-        proctex0: u32;
-        struct {
-            uClamp:        u32;
-            #place uClamp; /*bitfield 3*/ vClamp:        u32;
-            #place uClamp; /*bitfield 6*/ rgbFunc:       u32;
-            #place uClamp; /*bitfield 10*/ alphaFunc:     u32;
-            alphaSeparate: bool;
-            #place alphaSeparate; /*bitfield 1*/ enableNoise:   bool;
-            uShift:        u32;
-            #place uShift; /*bitfield 2*/ vShift:        u32;
-            #place uShift; /*bitfield 4*/ lodBiasLow:    u32;
-        }
-    }
-    union {
-        proctex1: u32;
-        struct {
-            uNoiseAmpl:  u16;
-            uNoisePhase: u16;
-        }
-    }
-    union {
-        proctex2: u32;
-        struct {
-            vNoiseAmpl:  u16;
-            vNoisePhase: u16;
-        }
-    }
-    union {
-        proctex3: u32;
-        struct {
-            uNoiseFreq: u16;
-            vNoiseFreq: u16;
-        }
-    }
-    union {
-        proctex4: u32;
-        struct {
-            minFilter:   u32;
-            #place minFilter; /*bitfield 3*/ unknown1:    u32;
-            #place minFilter; /*bitfield 11*/ width:       u32;
-            #place minFilter; /*bitfield 19*/ lodBiasHigh: u32;
-        }
-    }
-    union {
-        proctex5: u32;
-        struct {
-            offset:   u32;
-            #place offset; /*bitfield 8*/ unknown2: u32;
-        }
-    }
-}
-
-C3D_ProcTex_1 :: enum u8 {
-    U  :: 1;
-    V  :: 2;
-    UV :: 3;
-}
-
-C3D_ProcTexInit :: (pt: *C3D_ProcTex, offset: s32, length: s32) -> void #foreign libcitro3d;
-C3D_ProcTexNoiseCoefs :: (pt: *C3D_ProcTex, mode: s32, amplitude: float, frequency: float, phase: float) -> void #foreign libcitro3d;
-C3D_ProcTexLodBias :: (pt: *C3D_ProcTex, bias: float) -> void #foreign libcitro3d;
-C3D_ProcTexBind :: (texCoordId: s32, pt: *C3D_ProcTex) -> void #foreign libcitro3d;
-
-// GPU_LUT_NOISE, GPU_LUT_RGBMAP, GPU_LUT_ALPHAMAP
-C3D_ProcTexLut :: [128] u32;
-C3D_ProcTexLutBind :: (id: GPU_PROCTEX_LUTID, lut: *C3D_ProcTexLut) -> void #foreign libcitro3d;
-ProcTexLut_FromArray :: (lut: *C3D_ProcTexLut, in: *[129] float) -> void #foreign libcitro3d;
-
-C3D_ProcTexColorLutBind :: (lut: *C3D_ProcTexColorLut) -> void #foreign libcitro3d;
-ProcTexColorLut_Write :: (out: *C3D_ProcTexColorLut, in: *u32, offset: s32, length: s32) -> void #foreign libcitro3d;
-
-C3D_LightLut :: struct {
-    data: [256] u32;
-}
-
-C3D_LightLutDA :: struct {
-    lut:   C3D_LightLut;
-    bias:  float;
-    scale: float;
-}
-
-C3D_LightLutFunc :: #type (x: float, param: float) -> float #c_call;
-C3D_LightLutFuncDA :: #type (dist: float, arg0: float, arg1: float) -> float #c_call;
-
-LightLut_FromArray :: (lut: *C3D_LightLut, data: *float) -> void #foreign libcitro3d;
-LightLut_FromFunc :: (lut: *C3D_LightLut, func: C3D_LightLutFunc, param: float, negative: bool) -> void #foreign libcitro3d;
-LightLutDA_Create :: (lut: *C3D_LightLutDA, func: C3D_LightLutFuncDA, from: float, to: float, arg0: float, arg1: float) -> void #foreign libcitro3d;
-
-//-----------------------------------------------------------------------------
-// Material
-//-----------------------------------------------------------------------------
-C3D_Material :: struct {
-    ambient:   [3] float;
-    diffuse:   [3] float;
-    specular0: [3] float;
-    specular1: [3] float;
-    emission:  [3] float;
-}
-
-// Forward declarations
-C3D_Light :: C3D_Light_t;
-C3D_LightEnv :: C3D_LightEnv_t;
-
-C3D_LightLutInputConf :: struct {
-    abs:    u32;
-    select: u32;
-    scale:  u32;
-}
-
-C3D_LightEnvConf :: struct {
-    ambient:     u32;
-    numLights:   u32;
-    config:      [2] u32;
-    lutInput:    C3D_LightLutInputConf;
-    permutation: u32;
-}
-
-C3DF_LightEnv :: enum u8 {
-    Dirty    :: 1;
-    MtlDirty :: 2;
-    LCDirty  :: 4;
-}
-
-C3D_LightEnv_t :: struct {
-    flags:    u32;
-    luts:     [6] *C3D_LightLut #align 4;
-    ambient:  [3] float;
-    lights:   [8] *C3D_Light;
-    conf:     C3D_LightEnvConf;
-    material: C3D_Material;
-}
-
-C3D_LightEnvInit :: (env: *C3D_LightEnv) -> void #foreign libcitro3d;
-C3D_LightEnvBind :: (env: *C3D_LightEnv) -> void #foreign libcitro3d;
-
-C3D_LightEnvMaterial :: (env: *C3D_LightEnv, mtl: *C3D_Material) -> void #foreign libcitro3d;
-C3D_LightEnvAmbient :: (env: *C3D_LightEnv, r: float, g: float, b: float) -> void #foreign libcitro3d;
-C3D_LightEnvLut :: (env: *C3D_LightEnv, lutId: GPU_LIGHTLUTID, input: GPU_LIGHTLUTINPUT, negative: bool, lut: *C3D_LightLut) -> void #foreign libcitro3d;
-
-GPU :: enum u32 {
-    SHADOW_PRIMARY   :: 65536;
-    SHADOW_SECONDARY :: 131072;
-    INVERT_SHADOW    :: 262144;
-    SHADOW_ALPHA     :: 524288;
-}
-
-C3D_LightEnvFresnel :: (env: *C3D_LightEnv, selector: GPU_FRESNELSEL) -> void #foreign libcitro3d;
-C3D_LightEnvBumpMode :: (env: *C3D_LightEnv, mode: GPU_BUMPMODE) -> void #foreign libcitro3d;
-C3D_LightEnvBumpSel :: (env: *C3D_LightEnv, texUnit: s32) -> void #foreign libcitro3d;
-C3D_LightEnvShadowMode :: (env: *C3D_LightEnv, mode: u32) -> void #foreign libcitro3d;
-C3D_LightEnvShadowSel :: (env: *C3D_LightEnv, texUnit: s32) -> void #foreign libcitro3d;
-C3D_LightEnvClampHighlights :: (env: *C3D_LightEnv, clamp: bool) -> void #foreign libcitro3d;
-
-//-----------------------------------------------------------------------------
-// Light
-//-----------------------------------------------------------------------------
-C3D_LightMatConf :: struct {
-    specular0: u32;
-    specular1: u32;
-    diffuse:   u32;
-    ambient:   u32;
-}
-
-C3D_LightConf :: struct {
-    material:      C3D_LightMatConf;
-    position:      [3] u16;
-    padding0:      u16;
-    spotDir:       [3] u16;
-    padding1:      u16;
-    padding2:      u32;
-    config:        u32;
-    distAttnBias:  u32;
-    distAttnScale: u32;
-}
-
-C3DF_Light :: enum u16 {
-    Enabled  :: 1;
-    Dirty    :: 2;
-    MatDirty :: 4;
-    SPDirty  :: 16384;
-    DADirty  :: 32768;
-}
-
-C3D_Light_t :: struct {
-    flags:     u16;
-    id:        u16;
-    parent:    *C3D_LightEnv #align 4;
-    lut_SP:    *C3D_LightLut;
-    lut_DA:    *C3D_LightLut #align 4;
-    ambient:   [3] float;
-    diffuse:   [3] float;
-    specular0: [3] float;
-    specular1: [3] float;
-    conf:      C3D_LightConf;
-}
-
-C3D_LightInit :: (light: *C3D_Light, env: *C3D_LightEnv) -> s32 #foreign libcitro3d;
-C3D_LightEnable :: (light: *C3D_Light, enable: bool) -> void #foreign libcitro3d;
-C3D_LightTwoSideDiffuse :: (light: *C3D_Light, enable: bool) -> void #foreign libcitro3d;
-C3D_LightGeoFactor :: (light: *C3D_Light, id: s32, enable: bool) -> void #foreign libcitro3d;
-C3D_LightAmbient :: (light: *C3D_Light, r: float, g: float, b: float) -> void #foreign libcitro3d;
-C3D_LightDiffuse :: (light: *C3D_Light, r: float, g: float, b: float) -> void #foreign libcitro3d;
-C3D_LightSpecular0 :: (light: *C3D_Light, r: float, g: float, b: float) -> void #foreign libcitro3d;
-C3D_LightSpecular1 :: (light: *C3D_Light, r: float, g: float, b: float) -> void #foreign libcitro3d;
-C3D_LightPosition :: (light: *C3D_Light, pos: *C3D_FVec) -> void #foreign libcitro3d;
-C3D_LightShadowEnable :: (light: *C3D_Light, enable: bool) -> void #foreign libcitro3d;
-C3D_LightSpotEnable :: (light: *C3D_Light, enable: bool) -> void #foreign libcitro3d;
-C3D_LightSpotDir :: (light: *C3D_Light, x: float, y: float, z: float) -> void #foreign libcitro3d;
-C3D_LightSpotLut :: (light: *C3D_Light, lut: *C3D_LightLut) -> void #foreign libcitro3d;
-C3D_LightDistAttnEnable :: (light: *C3D_Light, enable: bool) -> void #foreign libcitro3d;
-C3D_LightDistAttn :: (light: *C3D_Light, lut: *C3D_LightLutDA) -> void #foreign libcitro3d;
-
-C3D_FogLut :: struct {
-    data: [128] u32;
-}
-
-C3D_GasLut :: struct {
-    diff:  [8] u32;
-    color: [8] u32;
-}
-
-FogLut_FromArray :: (lut: *C3D_FogLut, data: *[256] float) -> void #foreign libcitro3d;
-FogLut_Exp :: (lut: *C3D_FogLut, density: float, gradient: float, near: float, far: float) -> void #foreign libcitro3d;
-
-C3D_FogGasMode :: (fogMode: GPU_FOGMODE, gasMode: GPU_GASMODE, zFlip: bool) -> void #foreign libcitro3d;
-C3D_FogColor :: (color: u32) -> void #foreign libcitro3d;
-C3D_FogLutBind :: (lut: *C3D_FogLut) -> void #foreign libcitro3d;
-
-GasLut_FromArray :: (lut: *C3D_GasLut, data: *[9] u32) -> void #foreign libcitro3d;
-
-C3D_GasBeginAcc :: () -> void #foreign libcitro3d;
-C3D_GasDeltaZ :: (value: float) -> void #foreign libcitro3d;
-
-C3D_GasAccMax :: (value: float) -> void #foreign libcitro3d;
-C3D_GasAttn :: (value: float) -> void #foreign libcitro3d;
-C3D_GasLightPlanar :: (min: float, max: float, attn: float) -> void #foreign libcitro3d;
-C3D_GasLightView :: (min: float, max: float, attn: float) -> void #foreign libcitro3d;
-C3D_GasLightDirection :: (dotp: float) -> void #foreign libcitro3d;
-C3D_GasLutInput :: (input: GPU_GASLUTINPUT) -> void #foreign libcitro3d;
-C3D_GasLutBind :: (lut: *C3D_GasLut) -> void #foreign libcitro3d;
-
-C3D_FrameBuf :: struct {
-    colorBuf:  *void;
-    depthBuf:  *void #align 4;
-    width:     u16;
-    height:    u16;
-    colorFmt:  GPU_COLORBUF;
-    depthFmt:  GPU_DEPTHBUF;
-    block32:   bool;
-    colorMask: u8;
-    #place colorMask; /*bitfield 4*/ depthMask: u8;
-}
-
-// Flags for C3D_FrameBufClear
-C3D_ClearBits :: enum u8 {
-    COLOR :: 1;
-    DEPTH :: 2;
-    ALL   :: 3;
-}
-
-C3D_CalcColorBufSize :: (width: u32, height: u32, fmt: GPU_COLORBUF) -> u32 #foreign libcitro3d;
-C3D_CalcDepthBufSize :: (width: u32, height: u32, fmt: GPU_DEPTHBUF) -> u32 #foreign libcitro3d;
-
-C3D_GetFrameBuf :: () -> *C3D_FrameBuf #foreign libcitro3d;
-C3D_SetFrameBuf :: (fb: *C3D_FrameBuf) -> void #foreign libcitro3d;
-C3D_FrameBufTex :: (fb: *C3D_FrameBuf, tex: *C3D_Tex, face: GPU_TEXFACE, level: s32) -> void #foreign libcitro3d;
-C3D_FrameBufClear :: (fb: *C3D_FrameBuf, clearBits: C3D_ClearBits, clearColor: u32, clearDepth: u32) -> void #foreign libcitro3d;
-C3D_FrameBufTransfer :: (fb: *C3D_FrameBuf, screen: gfxScreen_t, side: gfx3dSide_t, transferFlags: u32) -> void #foreign libcitro3d;
-
-C3D_RenderTarget :: C3D_RenderTarget_tag;
-
-C3D_RenderTarget_tag :: struct {
-    next:          *C3D_RenderTarget;
-    prev:          *C3D_RenderTarget #align 4;
-    frameBuf:      C3D_FrameBuf;
-    used:          bool;
-    ownsColor:     bool;
-    ownsDepth:     bool;
-    linked:        bool;
-    screen:        gfxScreen_t;
-    side:          gfx3dSide_t;
-    transferFlags: u32;
-}
-
-// Flags for C3D_FrameBegin
-C3D_FRAME :: enum u8 {
-    SYNCDRAW :: 1;
-    NONBLOCK :: 2;
-}
-
-C3D_FrameRate :: (fps: float) -> float #foreign libcitro3d;
-C3D_FrameSync :: () -> void #foreign libcitro3d;
-C3D_FrameCounter :: (id: s32) -> u32 #foreign libcitro3d;
-
-C3D_FrameBegin :: (flags: u8) -> bool #foreign libcitro3d;
-C3D_FrameDrawOn :: (target: *C3D_RenderTarget) -> bool #foreign libcitro3d;
-C3D_FrameSplit :: (flags: u8) -> void #foreign libcitro3d;
-C3D_FrameEnd :: (flags: u8) -> void #foreign libcitro3d;
-
-C3D_FrameEndHook :: (hook: #type (unknown0: *void) -> void #c_call, param: *void) -> void #foreign libcitro3d;
-
-C3D_GetDrawingTime :: () -> float #foreign libcitro3d;
-C3D_GetProcessingTime :: () -> float #foreign libcitro3d;
-
-C3D_DEPTHTYPE :: union {
-    __i: s32;
-    __e: GPU_DEPTHBUF;
-}
-
-C3D_RenderTargetCreate :: (width: s32, height: s32, colorFmt: GPU_COLORBUF, depthFmt: C3D_DEPTHTYPE) -> *C3D_RenderTarget #foreign libcitro3d;
-C3D_RenderTargetCreateFromTex :: (tex: *C3D_Tex, face: GPU_TEXFACE, level: s32, depthFmt: C3D_DEPTHTYPE) -> *C3D_RenderTarget #foreign libcitro3d;
-C3D_RenderTargetDelete :: (target: *C3D_RenderTarget) -> void #foreign libcitro3d;
-C3D_RenderTargetSetOutput :: (target: *C3D_RenderTarget, screen: gfxScreen_t, side: gfx3dSide_t, transferFlags: u32) -> void #foreign libcitro3d;
-
-C3D_SyncDisplayTransfer :: (inadr: *u32, indim: u32, outadr: *u32, outdim: u32, flags: u32) -> void #foreign libcitro3d;
-C3D_SyncTextureCopy :: (inadr: *u32, indim: u32, outadr: *u32, outdim: u32, size: u32, flags: u32) -> void #foreign libcitro3d;
-C3D_SyncMemoryFill :: (buf0a: *u32, buf0v: u32, buf0e: *u32, control0: u16, buf1a: *u32, buf1v: u32, buf1e: *u32, control1: u16) -> void #foreign libcitro3d;
-
-/** @brief Subtexture
-*  @note If top > bottom, the subtexture is rotated 1/4 revolution counter-clockwise
-*/
-Tex3DS_SubTexture :: struct {
-    width:  u16; ///< Sub-texture width (pixels)
-    height: u16; ///< Sub-texture height (pixels)
-    left:   float; ///< Left u-coordinate
-    top:    float; ///< Top v-coordinate
-    right:  float; ///< Right u-coordinate
-    bottom: float; ///< Bottom v-coordinate
-}
-
-Tex3DS_Texture_s :: struct {}
-/** @brief Texture */
-Tex3DS_Texture :: *Tex3DS_Texture_s;
-
-/** @brief Import Tex3DS texture
-*  @param[in]  input   Input data
-*  @param[in]  insize  Size of the input data
-*  @param[out] tex     citro3d texture
-*  @param[out] texcube citro3d texcube
-*  @param[in]  vram    Whether to store textures in VRAM
-*  @returns Tex3DS texture
-*/
-Tex3DS_TextureImport :: (input: *void, insize: size_t, tex: *C3D_Tex, texcube: *C3D_TexCube, vram: bool) -> Tex3DS_Texture #foreign libcitro3d;
-
-/** @brief Import Tex3DS texture
-*
-*  @description
-*  For example, use this if you want to import from a large file without
-*  pulling the entire file into memory.
-*
-*  @param[out] tex      citro3d texture
-*  @param[out] texcube  citro3d texcube
-*  @param[in]  vram     Whether to store textures in VRAM
-*  @param[in]  callback Data callback
-*  @param[in]  userdata User data passed to callback
-*  @returns Tex3DS texture
-*/
-Tex3DS_TextureImportCallback :: (tex: *C3D_Tex, texcube: *C3D_TexCube, vram: bool, callback: decompressCallback, userdata: *void) -> Tex3DS_Texture #foreign libcitro3d;
-
-/** @brief Import Tex3DS texture
-*
-*  Starts reading at the current file descriptor's offset. The file
-*  descriptor's position is left at the end of the decoded data. On error, the
-*  file descriptor's position is indeterminate.
-*
-*  @param[in]  fd       Open file descriptor
-*  @param[out] tex      citro3d texture
-*  @param[out] texcube  citro3d texcube
-*  @param[in]  vram     Whether to store textures in VRAM
-*  @returns Tex3DS texture
-*/
-Tex3DS_TextureImportFD :: (fd: s32, tex: *C3D_Tex, texcube: *C3D_TexCube, vram: bool) -> Tex3DS_Texture #foreign libcitro3d;
-
-/** @brief Import Tex3DS texture
-*
-*  Starts reading at the current file stream's offset. The file stream's
-*  position is left at the end of the decoded data. On error, the file
-*  stream's position is indeterminate.
-*
-*  @param[in]  fp       Open file stream
-*  @param[out] tex      citro3d texture
-*  @param[out] texcube  citro3d texcube
-*  @param[in]  vram     Whether to store textures in VRAM
-*  @returns Tex3DS texture
-*/
-Tex3DS_TextureImportStdio :: (fp: *FILE, tex: *C3D_Tex, texcube: *C3D_TexCube, vram: bool) -> Tex3DS_Texture #foreign libcitro3d;
-
-/** @brief Get number of subtextures
-*  @param[in] texture Tex3DS texture
-*  @returns Number of subtextures
-*/
-Tex3DS_GetNumSubTextures :: (texture: Tex3DS_Texture) -> size_t #foreign libcitro3d;
-
-/** @brief Get subtexture
-*  @param[in] texture Tex3DS texture
-*  @param[in] index   Subtexture index
-*  @returns Subtexture info
-*/
-Tex3DS_GetSubTexture :: (texture: Tex3DS_Texture, index: size_t) -> *Tex3DS_SubTexture #foreign libcitro3d;
-
-/** @brief Free Tex3DS texture
-*  @param[in] texture Tex3DS texture to free
-*/
-Tex3DS_TextureFree :: (texture: Tex3DS_Texture) -> void #foreign libcitro3d;
-
-C2D_DrawParams :: struct {
-    pos:    struct {
-        x: float;
-        y: float;
-        w: float;
-        h: float;
-    };
-    center: struct {
-        x: float;
-        y: float;
-    };
-    depth:  float;
-    angle:  float;
-}
-
-C2D_TintMode :: enum u8 {
-    Solid :: 0;
-    Mult  :: 1;
-    Luma  :: 2;
-}
-
-C2D_Tint :: struct {
-    color: u32; ///< RGB tint color and Alpha transparency
-    blend: float; ///< Blending strength of the tint color (0.0~1.0)
-}
-
-C2D_Corner :: enum u8 {
-    TopLeft  :: 0;
-    TopRight :: 1;
-    BotLeft  :: 2;
-    BotRight :: 3;
-}
-
-C2D_Image :: struct {
-    tex:    *C3D_Tex;
-    subtex: *Tex3DS_SubTexture #align 4;
-}
-
-C2D_ImageTint :: struct {
-    corners: [4] C2D_Tint;
-}
-
-/** @brief Initialize citro2d
-*  @param[in] maxObjects Maximum number of 2D objects that can be drawn per frame.
-*  @remarks Pass C2D_DEFAULT_MAX_OBJECTS as a starting point.
-*  @returns true on success, false on failure
-*/
-C2D_Init :: (maxObjects: size_t) -> bool #foreign libcitro2d;
-
-/** @brief Deinitialize citro2d */
-C2D_Fini :: () -> void #foreign libcitro2d;
-
-/** @brief Prepares the GPU for rendering 2D content
-*  @remarks This needs to be done only once in the program if citro2d is the sole user of the GPU.
-*/
-C2D_Prepare :: () -> void #foreign libcitro2d;
-
-/** @brief Ensures all 2D objects so far have been drawn */
-C2D_Flush :: () -> void #foreign libcitro2d;
-
-/** @brief Configures the size of the 2D scene.
-*  @param[in] width The width of the scene, in pixels.
-*  @param[in] height The height of the scene, in pixels.
-*  @param[in] tilt Whether the scene is tilted like the 3DS's sideways screens.
-*/
-C2D_SceneSize :: (width: u32, height: u32, tilt: bool) -> void #foreign libcitro2d;
-
-/** @brief Resets the model transformation matrix. */
-C2D_ViewReset :: () -> void #foreign libcitro2d;
-
-/** @brief Saves the current model transformation matrix.
-* @param[out] matrix Pointer to save the current matrix to
-*/
-C2D_ViewSave :: (matrix: *C3D_Mtx) -> void #foreign libcitro2d;
-
-/** @brief Restores a previously saved model transformation matrix.
-* @param[in] matrix Pointer to matrix to restor
-*/
-C2D_ViewRestore :: (matrix: *C3D_Mtx) -> void #foreign libcitro2d;
-
-/** @brief Translates everything drawn via the model matrix.
-* @param[in] x Translation in the x direction
-* @param[in] y Translation in the y direction
-*/
-C2D_ViewTranslate :: (x: float, y: float) -> void #foreign libcitro2d;
-
-/** @brief Rotates everything drawn via the model matrix.
-* @param[in] rotation Rotation in the counterclockwise direction in radians
-*/
-C2D_ViewRotate :: (rotation: float) -> void #foreign libcitro2d;
-
-/** @brief Shears everything drawn via the model matrix.
-* @param[in] x Shear factor in the x direction
-* @param[in] y Shear factor in the y direction
-*/
-C2D_ViewShear :: (x: float, y: float) -> void #foreign libcitro2d;
-
-/** @brief Scales everything drawn via the model matrix.
-* @param[in] x Scale factor in the x direction
-* @param[in] y Scale factor in the y direction
-*/
-C2D_ViewScale :: (x: float, y: float) -> void #foreign libcitro2d;
-
-/** @brief Helper function to create a render target for a screen
-*  @param[in] screen Screen (GFX_TOP or GFX_BOTTOM)
-*  @param[in] side Side (GFX_LEFT or GFX_RIGHT)
-*  @returns citro3d render target object
-*/
-C2D_CreateScreenTarget :: (screen: gfxScreen_t, side: gfx3dSide_t) -> *C3D_RenderTarget #foreign libcitro2d;
-
-/** @brief Helper function to clear a rendertarget using the specified color
-*  @param[in] target Render target to clear
-*  @param[in] color 32-bit RGBA color value to fill the target with
-*/
-C2D_TargetClear :: (target: *C3D_RenderTarget, color: u32) -> void #foreign libcitro2d;
-
-/** @brief Configures the fading color
-*  @param[in] color 32-bit RGBA color value to be used as the fading color (0 by default)
-*  @remark The alpha component of the color is used as the strength of the fading color.
-*          If alpha is zero, the fading color has no effect. If it is the highest value,
-*          the rendered pixels will all have the fading color. Everything inbetween is
-*          rendered as a blend of the original pixel color and the fading color.
-*/
-C2D_Fade :: (color: u32) -> void #foreign libcitro2d;
-
-/** @brief Configures the formula used to calculate the tinted texture color
-*  @param[in] mode Tinting mode
-*  @remark Texture tinting works by linearly interpolating between the regular texture color
-*          and the tinted texture color according to the blending strength parameter.
-*          This function can be used to change how the tinted texture color is precisely
-*          calculated, refer to \ref C2D_TintMode for a list of available tinting modes.
-*/
-C2D_SetTintMode :: (mode: C2D_TintMode) -> void #foreign libcitro2d;
-
-/** @brief Draws an image using the GPU (variant accepting C2D_DrawParams)
-*  @param[in] img Handle of the image to draw
-*  @param[in] params Parameters with which to draw the image
-*  @param[in] tint Tint parameters to apply to the image (optional, can be null)
-*  @returns true on success, false on failure
-*/
-C2D_DrawImage :: (img: C2D_Image, params: *C2D_DrawParams, tint: *C2D_ImageTint) -> bool #foreign libcitro2d;
-
-/** @brief Draws a plain triangle using the GPU
-*  @param[in] x0 X coordinate of the first vertex of the triangle
-*  @param[in] y0 Y coordinate of the first vertex of the triangle
-*  @param[in] clr0 32-bit RGBA color of the first vertex of the triangle
-*  @param[in] x1 X coordinate of the second vertex of the triangle
-*  @param[in] y1 Y coordinate of the second vertex of the triangle
-*  @param[in] clr1 32-bit RGBA color of the second vertex of the triangle
-*  @param[in] x2 X coordinate of the third vertex of the triangle
-*  @param[in] y2 Y coordinate of the third vertex of the triangle
-*  @param[in] clr2 32-bit RGBA color of the third vertex of the triangle
-*  @param[in] depth Depth value to draw the triangle with
-*/
-C2D_DrawTriangle :: (x0: float, y0: float, clr0: u32, x1: float, y1: float, clr1: u32, x2: float, y2: float, clr2: u32, depth: float) -> bool #foreign libcitro2d;
-
-/** @brief Draws a plain line using the GPU
-*  @param[in] x0 X coordinate of the first vertex of the line
-*  @param[in] y0 Y coordinate of the first vertex of the line
-*  @param[in] clr0 32-bit RGBA color of the first vertex of the line
-*  @param[in] x1 X coordinate of the second vertex of the line
-*  @param[in] y1 Y coordinate of the second vertex of the line
-*  @param[in] clr1 32-bit RGBA color of the second vertex of the line
-*  @param[in] thickness Thickness, in pixels, of the line
-*  @param[in] depth Depth value to draw the line with
-*/
-C2D_DrawLine :: (x0: float, y0: float, clr0: u32, x1: float, y1: float, clr1: u32, thickness: float, depth: float) -> bool #foreign libcitro2d;
-
-/** @brief Draws a plain rectangle using the GPU
-*  @param[in] x X coordinate of the top-left vertex of the rectangle
-*  @param[in] y Y coordinate of the top-left vertex of the rectangle
-*  @param[in] z Z coordinate (depth value) to draw the rectangle with
-*  @param[in] w Width of the rectangle
-*  @param[in] h Height of the rectangle
-*  @param[in] clr0 32-bit RGBA color of the top-left corner of the rectangle
-*  @param[in] clr1 32-bit RGBA color of the top-right corner of the rectangle
-*  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the rectangle
-*  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the rectangle
-*/
-C2D_DrawRectangle :: (x: float, y: float, z: float, w: float, h: float, clr0: u32, clr1: u32, clr2: u32, clr3: u32) -> bool #foreign libcitro2d;
-
-/** @brief Draws an ellipse using the GPU
-*  @param[in] x X coordinate of the top-left vertex of the ellipse
-*  @param[in] y Y coordinate of the top-left vertex of the ellipse
-*  @param[in] z Z coordinate (depth value) to draw the ellipse with
-*  @param[in] w Width of the ellipse
-*  @param[in] h Height of the ellipse
-*  @param[in] clr0 32-bit RGBA color of the top-left corner of the ellipse
-*  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
-*  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
-*  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
-*  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
-*/
-C2D_DrawEllipse :: (x: float, y: float, z: float, w: float, h: float, clr0: u32, clr1: u32, clr2: u32, clr3: u32) -> bool #foreign libcitro2d;
-
-C2D_SpriteSheet_s :: struct {}
-C2D_SpriteSheet :: *C2D_SpriteSheet_s;
-
-/** @brief Load a sprite sheet from file
-*  @param[in] filename Name of the sprite sheet file (.t3x)
-*  @returns Sprite sheet handle
-*  @retval NULL Error
-*/
-C2D_SpriteSheetLoad :: (filename: *u8) -> C2D_SpriteSheet #foreign libcitro2d;
-
-/** @brief Load a sprite sheet from memory
-*  @param[in] data Data to load
-*  @param[in] size Size of the data to load
-*  @returns Sprite sheet handle
-*  @retval NULL Error
-*/
-C2D_SpriteSheetLoadFromMem :: (data: *void, size: size_t) -> C2D_SpriteSheet #foreign libcitro2d;
-
-/** @brief Load sprite sheet from file descriptor
-*  @param[in] fd File descriptor used to load data
-*  @returns Sprite sheet handle
-*  @retval NULL Error
-*/
-C2D_SpriteSheetFromFD :: (fd: s32) -> C2D_SpriteSheet #foreign libcitro2d;
-
-/** @brief Load sprite sheet from stdio file handle
-*  @param[in] f File handle used to load data
-*  @returns Sprite sheet handle
-*  @retval NULL Error
-*/
-C2D_SpriteSheetLoadFromHandle :: (f: *FILE) -> C2D_SpriteSheet #foreign libcitro2d;
-
-/** @brief Free a sprite sheet
-*  @param[in] sheet Sprite sheet handle
-*/
-C2D_SpriteSheetFree :: (sheet: C2D_SpriteSheet) -> void #foreign libcitro2d;
-
-/** @brief Retrieves the number of sprites in the specified sprite sheet
-*  @param[in] sheet Sprite sheet handle
-*  @returns Number of sprites
-*/
-C2D_SpriteSheetCount :: (sheet: C2D_SpriteSheet) -> size_t #foreign libcitro2d;
-
-/** @brief Retrieves the specified image from the specified sprite sheet
-*  @param[in] sheet Sprite sheet handle
-*  @param[in] index Index of the image to retrieve
-*  @returns Image object
-*/
-C2D_SpriteSheetGetImage :: (sheet: C2D_SpriteSheet, index: size_t) -> C2D_Image #foreign libcitro2d;
-
-C2D_Sprite :: struct {
-    image:  C2D_Image;
-    params: C2D_DrawParams;
-}
-
-C2D_Font_s :: struct {}
-C2D_Font :: *C2D_Font_s;
-
-/** @brief Load a font from a file
-* @param[in] filename Name of the font file (.bcfnt)
-* @returns Font handle
-* @retval NULL Error
-*/
-C2D_FontLoad :: (filename: *u8) -> C2D_Font #foreign libcitro2d;
-
-/** @brief Load a font from memory
-* @param[in] data Data to load
-* @param[in] size Size of the data to load
-* @returns Font handle
-* @retval NULL Error
-*/
-C2D_FontLoadFromMem :: (data: *void, size: size_t) -> C2D_Font #foreign libcitro2d;
-
-/** @brief Load a font from file descriptor
-* @param[in] fd File descriptor used to load data
-* @returns Font handle
-* @retval NULL Error
-*/
-C2D_FontLoadFromFD :: (fd: s32) -> C2D_Font #foreign libcitro2d;
-
-/** @brief Load font from stdio file handle
-*  @param[in] f File handle used to load data
-*  @returns Font handle
-*  @retval NULL Error
-*/
-C2D_FontLoadFromHandle :: (f: *FILE) -> C2D_Font #foreign libcitro2d;
-
-/** @brief Load corresponding font from system archive
-*  @param[in] region Region to get font from
-*  @returns Font handle
-*  @retval NULL Error
-*  @remark JPN, USA, EUR, and AUS all use the same font.
-*/
-C2D_FontLoadSystem :: (region: CFG_Region) -> C2D_Font #foreign libcitro2d;
-
-/** @brief Free a font
-* @param[in] font Font handle
-*/
-C2D_FontFree :: (font: C2D_Font) -> void #foreign libcitro2d;
-
-/** @brief Set a font's texture filter
-* @param[in] font Font handle
-* @param[in] magFilter the magnification filter
-* @param[in] minFilter the minification filter
-*/
-C2D_FontSetFilter :: (font: C2D_Font, magFilter: GPU_TEXTURE_FILTER_PARAM, minFilter: GPU_TEXTURE_FILTER_PARAM) -> void #foreign libcitro2d;
-
-/** @brief Find the glyph index of a codepoint, or returns the default
-* @param[in] font Font to search, or NULL for system font
-* @param[in] codepoint Codepoint to search for
-* @returns Glyph index
-* @retval font->cfnt->finf.alterCharIndex The codepoint does not exist in the font
-*/
-C2D_FontGlyphIndexFromCodePoint :: (font: C2D_Font, codepoint: u32) -> s32 #foreign libcitro2d;
-
-/** @brief Get character width info for a given index
-* @param[in] font Font to read from, or NULL for system font
-* @param[in] glyphIndex Index to get the width of
-* @returns Width info for glyph
-*/
-C2D_FontGetCharWidthInfo :: (font: C2D_Font, glyphIndex: s32) -> *charWidthInfo_s #foreign libcitro2d;
-
-/** @brief Calculate glyph position of given index
-* @param[in] font Font to read from, or NULL for system font
-* @param[out] out Glyph position
-* @param[in] glyphIndex Index to get position of
-* @param[in] flags Misc flags
-* @param[in] scaleX Size to scale in X
-* @param[in] scaleY Size to scale in Y
-*/
-C2D_FontCalcGlyphPos :: (font: C2D_Font, out: *fontGlyphPos_s, glyphIndex: s32, flags: u32, scaleX: float, scaleY: float) -> void #foreign libcitro2d;
-
-/** @brief Get the font info structure associated with the font
-* @param[in] font Font to read from, or NULL for the system font
-* @returns FINF associated with the font
-*/
-C2D_FontGetInfo :: (font: C2D_Font) -> *FINF_s #foreign libcitro2d;
-
-C2D_TextBuf_s :: struct {}
-C2D_TextBuf :: *C2D_TextBuf_s;
-
-/// Text object.
-C2D_Text :: struct {
-    buf:   C2D_TextBuf; ///< Buffer associated with the text.
-    begin: size_t; ///< Reserved for internal use.
-    end:   size_t; ///< Reserved for internal use.
-    width: float; ///< Width of the text in pixels, according to 1x scale metrics.
-    lines: u32; ///< Number of lines in the text.
-    words: u32; ///< Number of words in the text.
-    font:  C2D_Font; ///< Font used to draw the text, or NULL for system font
-}
-
-C2D :: enum u8 {
-    AtBaseline     :: 1;
-    WithColor      :: 2;
-    AlignLeft      :: 0;
-    AlignRight     :: 4;
-    AlignCenter    :: 8;
-    AlignJustified :: 12;
-    AlignMask      :: 12;
-    WordWrap       :: 16;
-}
-
-/** @brief Creates a new text buffer.
-*  @param[in] maxGlyphs Maximum number of glyphs that can be stored in the buffer.
-*  @returns Text buffer handle (or NULL on failure).
-*/
-C2D_TextBufNew :: (maxGlyphs: size_t) -> C2D_TextBuf #foreign libcitro2d;
-
-/** @brief Resizes a text buffer.
-*  @param[in] buf Text buffer to resize.
-*  @param[in] maxGlyphs Maximum number of glyphs that can be stored in the buffer.
-*  @returns New text buffer handle (or NULL on failure).
-*  @remarks If successful, old text buffer handle becomes invalid.
-*/
-C2D_TextBufResize :: (buf: C2D_TextBuf, maxGlyphs: size_t) -> C2D_TextBuf #foreign libcitro2d;
-
-/** @brief Deletes a text buffer.
-*  @param[in] buf Text buffer handle.
-*  @remarks This also invalidates all text objects previously created with this buffer.
-*/
-C2D_TextBufDelete :: (buf: C2D_TextBuf) -> void #foreign libcitro2d;
-
-/** @brief Clears all stored text in a buffer.
-*  @param[in] buf Text buffer handle.
-*/
-C2D_TextBufClear :: (buf: C2D_TextBuf) -> void #foreign libcitro2d;
-
-/** @brief Retrieves the number of glyphs stored in a text buffer.
-*  @param[in] buf Text buffer handle.
-*  @returns The number of glyphs.
-*/
-C2D_TextBufGetNumGlyphs :: (buf: C2D_TextBuf) -> size_t #foreign libcitro2d;
-
-/** @brief Parses and adds a single line of text to a text buffer.
-*  @param[out] text Pointer to text object to store information in.
-*  @param[in] buf Text buffer handle.
-*  @param[in] str String to parse.
-*  @param[in] lineNo Line number assigned to the text (used to calculate vertical position).
-*  @remarks Whitespace doesn't add any glyphs to the text buffer and is thus "free".
-*  @returns On success, a pointer to the character on which string processing stopped, which
-*           can be a newline ('\n'; indicating that's where the line ended), the null character
-*           ('\0'; indicating the end of the string was reached), or any other character
-*           (indicating the text buffer is full and no more glyphs can be added).
-*           On failure, NULL.
-*/
-C2D_TextParseLine :: (text: *C2D_Text, buf: C2D_TextBuf, str: *u8, lineNo: u32) -> *u8 #foreign libcitro2d;
-
-/** @brief Parses and adds a single line of text to a text buffer.
-*  @param[out] text Pointer to text object to store information in.
-*  @param[in] font Font to get glyphs from, or null for system font
-*  @param[in] buf Text buffer handle.
-*  @param[in] str String to parse.
-*  @param[in] lineNo Line number assigned to the text (used to calculate vertical position).
-*  @remarks Whitespace doesn't add any glyphs to the text buffer and is thus "free".
-*  @returns On success, a pointer to the character on which string processing stopped, which
-*           can be a newline ('\n'; indicating that's where the line ended), the null character
-*           ('\0'; indicating the end of the string was reached), or any other character
-*           (indicating the text buffer is full and no more glyphs can be added).
-*           On failure, NULL.
-*/
-C2D_TextFontParseLine :: (text: *C2D_Text, font: C2D_Font, buf: C2D_TextBuf, str: *u8, lineNo: u32) -> *u8 #foreign libcitro2d;
-
-/** @brief Parses and adds arbitrary text (including newlines) to a text buffer.
-*  @param[out] text Pointer to text object to store information in.
-*  @param[in] buf Text buffer handle.
-*  @param[in] str String to parse.
-*  @remarks Whitespace doesn't add any glyphs to the text buffer and is thus "free".
-*  @returns On success, a pointer to the character on which string processing stopped, which
-*           can be the null character ('\0'; indicating the end of the string was reached),
-*           or any other character (indicating the text buffer is full and no more glyphs can be added).
-*           On failure, NULL.
-*/
-C2D_TextParse :: (text: *C2D_Text, buf: C2D_TextBuf, str: *u8) -> *u8 #foreign libcitro2d;
-
-/** @brief Parses and adds arbitrary text (including newlines) to a text buffer.
-*  @param[out] text Pointer to text object to store information in.
-*  @param[in] font Font to get glyphs from, or null for system font
-*  @param[in] buf Text buffer handle.
-*  @param[in] str String to parse.
-*  @remarks Whitespace doesn't add any glyphs to the text buffer and is thus "free".
-*  @returns On success, a pointer to the character on which string processing stopped, which
-*           can be the null character ('\0'; indicating the end of the string was reached),
-*           or any other character (indicating the text buffer is full and no more glyphs can be added).
-*           On failure, NULL.
-*/
-C2D_TextFontParse :: (text: *C2D_Text, font: C2D_Font, buf: C2D_TextBuf, str: *u8) -> *u8 #foreign libcitro2d;
-
-/** @brief Optimizes a text object in order to be drawn more efficiently.
-*  @param[in] text Pointer to text object.
-*/
-C2D_TextOptimize :: (text: *C2D_Text) -> void #foreign libcitro2d;
-
-/** @brief Retrieves the total dimensions of a text object.
-*  @param[in] text Pointer to text object.
-*  @param[in] scaleX Horizontal size of the font. 1.0f corresponds to the native size of the font.
-*  @param[in] scaleY Vertical size of the font. 1.0f corresponds to the native size of the font.
-*  @param[out] outWidth (optional) Variable in which to store the width of the text.
-*  @param[out] outHeight (optional) Variable in which to store the height of the text.
-*/
-C2D_TextGetDimensions :: (text: *C2D_Text, scaleX: float, scaleY: float, outWidth: *float, outHeight: *float) -> void #foreign libcitro2d;
-
-/** @brief Draws text using the GPU.
-*  @param[in] text Pointer to text object.
-*  @param[in] flags Text drawing flags.
-*  @param[in] x Horizontal position to draw the text on.
-*  @param[in] y Vertical position to draw the text on. If C2D_AtBaseline is not specified (default), this
-*               is the top left corner of the block of text; otherwise this is the position of the baseline
-*               of the first line of text.
-*  @param[in] z Depth value of the text. If unsure, pass 0.0f.
-*  @param[in] scaleX Horizontal size of the font. 1.0f corresponds to the native size of the font.
-*  @param[in] scaleY Vertical size of the font. 1.0f corresponds to the native size of the font.
-*  @remarks The default 3DS system font has a glyph height of 30px, and the baseline is at 25px.
-*/
-C2D_DrawText :: (text: *C2D_Text, flags: u32, x: float, y: float, z: float, scaleX: float, scaleY: float, __args: ..Any) -> void #foreign libcitro2d;
+* @brief Clears an rbtree.
+* @param tree Pointer to the tree.
+* @param destructor Destructor to use when clearing the tree's nodes.
+*/
+rbtree_clear :: (tree: *rbtree_t, destructor: rbtree_node_destructor_t) -> void #foreign libctru;
+
+gdbHioOpen :: (pathname: *u8, flags: s32, mode: mode_t) -> s32 #foreign libctru;
+gdbHioClose :: (fd: s32) -> s32 #foreign libctru;
+gdbHioRead :: (fd: s32, buf: *void, count: u32) -> s32 #foreign libctru;
+gdbHioWrite :: (fd: s32, buf: *void, count: u32) -> s32 #foreign libctru;
+gdbHioLseek :: (fd: s32, offset: off_t, flag: s32) -> off_t #foreign libctru;
+gdbHioRename :: (oldpath: *u8, newpath: *u8) -> s32 #foreign libctru;
+gdbHioUnlink :: (pathname: *u8) -> s32 #foreign libctru;
+gdbHioStat :: (pathname: *u8, st: *stat) -> s32 #foreign libctru;
+gdbHioFstat :: (fd: s32, st: *stat) -> s32 #foreign libctru;
+gdbHioGettimeofday :: (tv: *timeval, tz: *void) -> s32 #foreign libctru;
+gdbHioIsatty :: (fd: s32) -> s32 #foreign libctru;
+
+gdbHioSystem :: (command: *u8) -> s32 #foreign libctru;
 
 #scope_file
 
 libctru :: #foreign_system_library,no_dll "libctru";
-libcitro3d :: #foreign_system_library,no_dll "libcitro3d";
-libcitro2d :: #foreign_system_library,no_dll "libcitro2d";
