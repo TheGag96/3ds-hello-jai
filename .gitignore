@@ -1,0 +1,11 @@
+*.bak
+/.build/
+*.t3x
+*.3dsx
+*.cia
+*.smdh
+*.elf
+*.o
+*.exe
+/working/
+*.sublime-*
