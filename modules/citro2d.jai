@@ -3,8 +3,8 @@
 // Created with help of Bindings_Generator
 //
 
-#import,file "libctru.jai";
-#import,file "citro3d.jai";
+#import "libctru";
+#import "citro3d";
 
 C2D_DEFAULT_MAX_OBJECTS :: 4096;
 

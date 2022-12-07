@@ -32,10 +32,15 @@ build :: () {
     target_options.llvm_options.disable_inlining            = false;
   }
 
+  import_paths: [..] string;
+  array_add(*import_paths, ..target_options.import_path);
+  array_add(*import_paths, "modules");
+
+  target_options.import_path = import_paths;
   set_build_options(target_options, w);
 
   compiler_begin_intercept(w);
-  add_build_file(tprint("%/hello.jai", #filepath), w);
+  add_build_file("src/main.jai", w);
   hacky_inline_asm_removal(w);
   compiler_end_intercept(w);
 

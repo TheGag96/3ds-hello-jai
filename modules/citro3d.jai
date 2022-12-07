@@ -3,7 +3,7 @@
 // Created with help of Bindings_Generator
 //
 
-#import,file "libctru.jai";
+#import "libctru";
 #import "Math";
 
 M_PI  :: 3.14159265358979;
