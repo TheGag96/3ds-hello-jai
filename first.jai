@@ -1,6 +1,10 @@
 #import "Basic";
 #import "Compiler";
+#import "File";
+#import "File_Utilities";
 #import "Process";
+#import "Sort";
+#import "String";
 
 COMPILER_FIXED :: false; // @TODO: Remove when compiler is fixed to let this project compile properly
 
@@ -49,29 +53,6 @@ build :: () {
 
   set_build_options_dc(.{do_output = false});
 
-  compiler_begin_intercept(w);
-  add_build_file("src/main.jai", w);
-  obj_files := hacky_inline_asm_removal(w);
-  compiler_end_intercept(w);
-
-  // All of the architecture args are important! You'll get an error about 3dsx_crt0.o if you don't include them all.
-  ARCH_FLAGS :: string.["-specs=3dsx.specs", "-march=armv6k", "-mtune=mpcore", "-mfloat-abi=hard", "-mtp=soft"];
-  LIB_DIRS   :: string.["-L/opt/devkitpro/libctru/lib"];
-  LIBS       :: string.["-lcitro3d", "-lctru", "-lm"];
-
-  elf_name   := tprint("%.elf",  PROJECT_NAME);
-  smdh_name  := tprint("%.smdh", PROJECT_NAME);
-  _3dsx_name := tprint("%.3dsx", PROJECT_NAME);
-  // cia_name   := tprint("%.cia",  PROJECT_NAME); // @TODO CIA output
-
-  link_args: [..] string;
-  array_add(*link_args, "arm-none-eabi-gcc");
-  array_add(*link_args, ..ARCH_FLAGS);
-  array_add(*link_args, ..obj_files);
-  array_add(*link_args, ..LIB_DIRS);
-  array_add(*link_args, ..LIBS);
-  array_add(*link_args, "-o", elf_name);
-
   cmd :: (args: ..string, fail_string: string) {
     process_result, output_string, error_string, timeout_reached := run_command(
       ..args,
@@ -80,22 +61,133 @@ build :: () {
     if process_result.exit_code != 0  compiler_report(fail_string);
   }
 
-  cmd(
-    "smdhtool", "--create", APP_NAME, APP_DESCRIPTION, APP_AUTHOR, "resources/48x48.png", smdh_name,
-    fail_string = "Failed to create SMDH!"
-  );
 
-  #if COMPILER_FIXED {
-    cmd(
-      ..link_args,
-      fail_string = "Failed to link!"
+
+  //
+  // Build shaders and output bindings
+  //
+  {
+    shader_files: [..] string;
+
+    visitor :: (info: *File_Visit_Info, user_data: *[..] string) {
+      if !ends_with(info.full_name, ".v.pica") && !ends_with(info.full_name, ".g.pica")  return;
+      if path_filename(info.full_name).count < "a.v.pica".count  return;
+      array_add(user_data, copy_string(info.full_name));
+    }
+
+    visit_files(
+      "shaders", recursive = true, user_data = *shader_files, proc = visitor, visit_directories = false,
+      follow_symlinks = true
     );
 
-    cmd(
-      "3dstool", elf_name, _3dsx_name, tprint("--smdh=%", smdh_name), "--romfs=romfs",
-      fail_string = "Failed to create 3dsx!"
-    );
+    quick_sort(shader_files, compare);
+
+    // Assumed both files end in ".x.pica" already
+    same_base :: (a: string, b: string) -> bool {
+      if a.count != b.count  return false;
+
+      return slice(a, 0, a.count-".v.pica".count) == slice(b, 0, a.count-".v.pica".count);
+    }
+
+    it := 0;
+    while it < shader_files.count {
+      file := shader_files[it];
+
+      shbin_file := tprint(".build/%.shbin", slice(file, 0, file.count - ".v.pica".count));
+      make_directory_if_it_does_not_exist(path_strip_filename(shbin_file), recursive = true);
+
+      if it < shader_files.count-1 && same_base(file, shader_files[it+1]) {
+        cmd("picasso", file, shader_files[it+1], "-o", shbin_file, fail_string = "Couldn't assemble shaders!");
+        it += 1;
+      }
+      else {
+        cmd("picasso", file, "-o", shbin_file, fail_string = "Couldn't assemble shader!");
+      }
+
+      it += 1;
+    }
   }
+
+  //
+  // Build texture atlases and output to romfs folder
+  //
+  {
+    t3s_files: [..] string;
+
+    visitor :: (info: *File_Visit_Info, user_data: *[..] string) {
+      if ends_with(info.full_name, ".t3s")  {
+        array_add(user_data, copy_string(info.full_name));
+      }
+    }
+
+    visit_files(
+      "gfx", recursive = true, user_data = *t3s_files, proc = visitor, visit_directories = false,
+      follow_symlinks = true
+    );
+
+    for t3s_files {
+      t3x_path := tprint("romfs/%.t3x", path_strip_extension(it));
+      make_directory_if_it_does_not_exist(path_strip_filename(t3x_path), recursive = true);
+      cmd("tex3ds", "-i", it, "-o", t3x_path, fail_string = "Couldn't generate textures atlas!");
+    }
+  }
+
+  compiler_begin_intercept(w);
+
+  // Allow program to easily grab shader binaries as byte arrays
+  add_build_string(#string DONE
+    SHADER_GET :: (s: string) -> [] u8 {
+      #import "File";
+      #import "Basic";
+      return xx read_entire_file(tprint(".build/shaders/%.shbin", s));
+    }
+  DONE, w);
+
+  add_build_file("src/main.jai", w);
+  obj_files := hacky_inline_asm_removal(w);
+
+  compiler_end_intercept(w);
+
+  //
+  // Link and create .3dsx
+  //
+  {
+    // All of the architecture args are important! You'll get an error about 3dsx_crt0.o if you don't include them all.
+    ARCH_FLAGS :: string.["-specs=3dsx.specs", "-march=armv6k", "-mtune=mpcore", "-mfloat-abi=hard", "-mtp=soft"];
+    LIB_DIRS   :: string.["-L/opt/devkitpro/libctru/lib"];
+    LIBS       :: string.["-lcitro3d", "-lctru", "-lm"];
+
+    elf_name   := tprint("%.elf",  PROJECT_NAME);
+    smdh_name  := tprint("%.smdh", PROJECT_NAME);
+    _3dsx_name := tprint("%.3dsx", PROJECT_NAME);
+    // cia_name   := tprint("%.cia",  PROJECT_NAME); // @TODO CIA output
+
+    link_args: [..] string;
+    array_add(*link_args, "arm-none-eabi-gcc");
+    array_add(*link_args, ..ARCH_FLAGS);
+    array_add(*link_args, ..obj_files);
+    array_add(*link_args, ..LIB_DIRS);
+    array_add(*link_args, ..LIBS);
+    array_add(*link_args, "-o", elf_name);
+
+    cmd(
+      "smdhtool", "--create", APP_NAME, APP_DESCRIPTION, APP_AUTHOR, "resources/48x48.png", smdh_name,
+      fail_string = "Failed to create SMDH!"
+    );
+
+    #if COMPILER_FIXED {
+      cmd(
+        ..link_args,
+        fail_string = "Failed to link!"
+      );
+
+      cmd(
+        "3dstool", elf_name, _3dsx_name, tprint("--smdh=%", smdh_name), "--romfs=romfs",
+        fail_string = "Failed to create 3dsx!"
+      );
+    }
+  }
+
 }
 
 // Thanks to tsoding! https://github.com/tsoding/jai-wasm/blob/master/first.jai#L31-L77
