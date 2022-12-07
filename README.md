@@ -5,7 +5,7 @@ Unfortunately, **this repo won't really work yet** (as of beta v0.1.047) until t
 * Ability to specify equivalents of `-mfloat-abi` and `-mtp` (coming in next beta)
 * Genreal support for compiling on 32-bit architectures (pointer sizes are wrong)
 
-But otherwise, this does contain what would be a minimal homebrew app for the 3DS, written in Jai, plus bindings for libctru, citro3d, and citro2d! To build:
+But otherwise, this does contain what would be a minimal homebrew app for the 3DS, written in Jai, plus bindings for libctru, citro3d, and citro2d! To build, ensure you have [devkitPro installed](https://devkitpro.org/wiki/Getting_Started) and in your `PATH`. Then, it should be as simple as:
 
 ```sh
 jai first.jai
