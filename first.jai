@@ -15,6 +15,13 @@ APP_NAME        :: "Hello World in Jai";
 APP_DESCRIPTION :: "An example Jai program for the 3DS";
 APP_AUTHOR      :: "A Jai developer";
 
+// @TODO: Use environment variables for this
+#if OS == .WINDOWS {
+  DEVKITPRO :: "C:/devkitPro";
+} else #if (OS == .LINUX) || (OS == .MACOS) {
+  DEVKITPRO :: "/opt/devkitpro";
+}
+
 build :: () {
   w := compiler_create_workspace(name = "3DS");
   if !w {
@@ -154,7 +161,7 @@ build :: () {
   {
     // All of the architecture args are important! You'll get an error about 3dsx_crt0.o if you don't include them all.
     ARCH_FLAGS :: string.["-specs=3dsx.specs", "-march=armv6k", "-mtune=mpcore", "-mfloat-abi=hard", "-mtp=soft"];
-    LIB_DIRS   :: string.["-L/opt/devkitpro/libctru/lib"];
+    LIB_DIRS   :: string.[#run tprint("-L%/libctru/lib", DEVKITPRO)];
     LIBS       :: string.["-lcitro3d", "-lctru", "-lm"];
 
     elf_name   := tprint("%.elf",  PROJECT_NAME);
