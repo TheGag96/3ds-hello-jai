@@ -13,6 +13,24 @@ jai first.jai
 
 Right now, this just creates a `.obj` file in the `.build` folder and a `.smdh` file. Eventually a `.elf` and `.3dsx` file will be made too.
 
+## Shaders
+
+Just like the devkitPro example Makefiles, shaders can be automatically compiled by the metaprogram and made usable by the main source. For exampe, your `myshader.v.pica` and `myshader.g.pica` files in the `shaders` folder. Then, from your user code, you can use them as a `[] u8` by doing:
+
+```jai
+MY_SHADER :: #run SHADER_GET("myshader");
+```
+
+Note that the folder is searched recursively, so if you have a shader at `shaders/folder/someshader.v.pica`:
+
+```jai
+SOME_SHADER :: #run SHADER_GET("folder/someshader");
+```
+
+## Texture atlases
+
+Again, like the devkitPro Makefiles, the metaprogram processes `.t3s` files found in `gfx` and converts them to `.t3x` files at the corresponding spot in `romfs/gfx`.
+
 ## Major to do:
 
 * Bindings for NewlibC
