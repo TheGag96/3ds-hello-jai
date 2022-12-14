@@ -1,11 +1,14 @@
 # 3DS Homebrew Hello World Example in Jai
 
-Unfortunately, **this repo won't really work yet** (as of beta v0.1.047) until the following are implemented in the compiler:
+Unfortunately, **this repo won't really work yet** (as of beta v0.1.048) until the following are implemented in the compiler:
 
-* Ability to specify equivalents of `-mfloat-abi` and `-mtp` (coming in next beta)
-* Genreal support for compiling on 32-bit architectures (pointer sizes are wrong)
+* A fix for a bug where `OS` does not get set to your `Build_Option`'s `os_target` (it just stays the host system's)
+  - (Once this is fixed, I'll have to go and make a bunch of hacks in `Runtime_Support.jai` and elsewhere to get things playing nice with the 3DS.)
+* General support for compiling on 32-bit architectures (pointer sizes are wrong)
 
-But otherwise, this does contain what would be a minimal homebrew app for the 3DS, written in Jai, plus bindings for libctru, citro3d, and citro2d! To build, ensure you have [devkitPro installed](https://devkitpro.org/wiki/Getting_Started) and in your `PATH`. Then, it should be as simple as:
+Right now, I have compiling *and running* a version of this example, but I haven't committed it because it requires lots of hacks in Jai's `modules/` folder and other ugly stuff. Not even string literals work at the moment, probably because of the pointer size thing. At the very least, calling C functions, looping, and (probably) doing math is feasible.
+
+But, otherwise, this does contain what would be a minimal homebrew app for the 3DS, written in Jai, plus bindings for libctru, citro3d, and citro2d! To build, ensure you have [devkitPro installed](https://devkitpro.org/wiki/Getting_Started) and in your `PATH`. Then, it should be as simple as:
 
 ```sh
 jai first.jai
