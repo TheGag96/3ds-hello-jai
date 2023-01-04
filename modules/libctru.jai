@@ -4,65 +4,7 @@
 //
 
 #import "Basic";
-
-size_t    :: u32;
-ssize_t   :: s32;
-ptrdiff_t :: s32;
-wchar_t   :: s32;
-wint_t    :: u32;
-uintptr_t :: u32;
-off_t     :: s32;
-mode_t    :: s32;
-gid_t     :: s32;
-dev_t     :: s32;
-uid_t     :: s32;
-blksize_t :: s32;
-blkcnt_t  :: s32;
-nlink_t   :: u16;
-ino_t     :: u32;
-
-FILE :: void;
-
-time_t      :: s64;
-suseconds_t :: s32;
-
-timeval :: struct {
-    tv_sec:  time_t; /* seconds */
-    tv_usec: suseconds_t; /* and microseconds */
-}
-
-timespec :: struct {
-    tv_sec: time_t;     /* seconds */
-    tv_nsec: s32;    /* and nanoseconds */
-}
-
-in_port_t :: u16;
-in_addr_t :: u32;
-
-_LOCK_T :: s32;
-
-_LOCK_RECURSIVE_T :: struct {
-    lock: _LOCK_T;
-    thread_tag: s32;
-    counter: s32;
-}
-
-stat :: struct {
-    st_dev:     dev_t;
-    st_ino:     ino_t;
-    st_mode:    mode_t;
-    st_nlink:   nlink_t;
-    st_uid:     uid_t;
-    st_gid:     gid_t;
-    st_rdev:    dev_t;
-    st_size:    off_t;
-    st_atim:    timespec;
-    st_mtim:    timespec;
-    st_ctim:    timespec;
-    st_blksize: blksize_t;
-    st_blocks:  blkcnt_t;
-    st_spare4:  [2] s32;
-}
+#import "POSIX";
 
 __3DS__ :: 1;
 
@@ -16146,4 +16088,4 @@ gdbHioSystem :: (command: *u8) -> s32 #foreign libctru;
 
 #scope_file
 
-libctru :: #foreign_system_library,no_dll "libctru";
+libctru :: #system_library,no_dll "libctru";

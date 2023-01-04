@@ -5,6 +5,7 @@
 
 #import "libctru";
 #import "citro3d";
+#import "POSIX";
 
 C2D_DEFAULT_MAX_OBJECTS :: 4096;
 
@@ -975,6 +976,6 @@ C2Di_Update :: () -> void #foreign libcitro2d;
 
 #scope_file
 
-libctru :: #foreign_system_library,no_dll "libctru";
-libcitro3d :: #foreign_system_library,no_dll "libcitro3d";
-libcitro2d :: #foreign_system_library,no_dll "libcitro2d";
+libctru :: #system_library,no_dll "libctru";
+libcitro3d :: #system_library,no_dll "libcitro3d";
+libcitro2d :: #system_library,no_dll "libcitro2d";

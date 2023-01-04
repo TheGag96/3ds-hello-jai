@@ -7,7 +7,7 @@
 #import "citro3d";
 #import "citro2d";
 
-libc :: #foreign_system_library,no_dll "libc";
+libc :: #system_library,no_dll "libc";
 printf :: (fmt: *u8, va_args: .. Any) -> s32 #foreign libc;
 
 main :: () {

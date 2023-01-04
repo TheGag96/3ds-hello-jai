@@ -5,6 +5,7 @@
 
 #import "libctru";
 #import "Math";
+#import "POSIX";
 
 M_PI  :: 3.14159265358979;
 M_TAU :: 6.28318530717958647692528676655900576;
@@ -1877,5 +1878,5 @@ Tex3DS_TextureFree :: (texture: Tex3DS_Texture) #foreign libcitro3d;
 
 #scope_file
 
-libctru :: #foreign_system_library,no_dll "libctru";
-libcitro3d :: #foreign_system_library,no_dll "libcitro3d";
+libctru :: #system_library,no_dll "libctru";
+libcitro3d :: #system_library,no_dll "libcitro3d";

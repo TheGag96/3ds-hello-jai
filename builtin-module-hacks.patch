@@ -1,0 +1,517 @@
+diff --git a/modules/File/module.jai b/modules/File/module.jai
+index 47e93c5..628661d 100644
+--- a/modules/File/module.jai
++++ b/modules/File/module.jai
+@@ -1,6 +1,6 @@
+ #if OS == .WINDOWS {
+     #load "windows.jai";
+-} else #if (OS == .LINUX) || (OS == .MACOS) {
++} else #if (OS == .LINUX) || (OS == .MACOS) || (OS == .NN_3DS) {
+     #load "unix.jai";
+ }
+ 
+diff --git a/modules/File/unix.jai b/modules/File/unix.jai
+index 9db732f..8c17e80 100644
+--- a/modules/File/unix.jai
++++ b/modules/File/unix.jai
+@@ -116,8 +116,8 @@ read_entire_file :: (f: File, zero_terminated := false) -> string, bool {
+     if data == null return "", false;
+     
+     // documentation seems to suggest that fread gaurantees size*count is fully read back otherwise error
+-    single_read_length := fread(data, 1, cast (u64) length, f.handle);
+-    if single_read_length != cast(u64) length {  // @Robustness: Probably we are supposed to check the return code.
++    single_read_length := fread(data, 1, cast (size_t) length, f.handle);
++    if single_read_length != cast(size_t) length {  // @Robustness: Probably we are supposed to check the return code.
+         free(data);
+         return "", false;
+     }
+@@ -134,8 +134,8 @@ read_entire_file :: (f: File, zero_terminated := false) -> string, bool {
+ 
+ file_write :: (file: *File, data: *void, length: s64) -> bool {
+ 	assert(length >= 0);
+-    written := fwrite(data, 1, cast(u64) length, file.handle);
+-    return written == cast(u64) length;
++    written := fwrite(data, 1, cast(size_t) length, file.handle);
++    return written == cast(size_t) length;
+ }
+ 
+ delete_directory :: (dirname: string) {
+diff --git a/modules/POSIX/libc_bindings.jai b/modules/POSIX/libc_bindings.jai
+index f1146af..1140a54 100644
+--- a/modules/POSIX/libc_bindings.jai
++++ b/modules/POSIX/libc_bindings.jai
+@@ -1,4 +1,6 @@
+-sysconf :: (name: _SC_definitions) -> s64 #foreign libc;
++#if OS != .NN_3DS {
++    sysconf :: (name: _SC_definitions) -> s64 #foreign libc;
++}
+ 
+ strsignal :: (sig: s32) -> *u8 #foreign libc;
+ 
+@@ -12,9 +14,11 @@ strsignal :: (sig: s32) -> *u8 #foreign libc;
+ // WARNING
+ // WARNING: These pwent functions are not threadsafe!
+ // WARNING
+-getpwent :: () -> *passwd #foreign libc;
+-setpwent :: () #foreign libc;
+-endpwent :: () #foreign libc;
++#if OS == .NN_3DS {
++    getpwent :: () -> *passwd #foreign libc;
++    setpwent :: () #foreign libc;
++    endpwent :: () #foreign libc;
++}
+ 
+ #if OS == .LINUX {
+     timerfd_create :: (clockid: s32, flags: s32) -> s32 #foreign libc;
+@@ -28,6 +32,9 @@ endpwent :: () #foreign libc;
+ } else #if OS == .MACOS {
+     // On OSX, errno is #define errno (*__error())
+     __errno_location :: () -> *OS_Error_Code #foreign libc "__error";
++} else #if OS == .NN_3DS {
++    // On Newlib, errno is #define errno (*__errno())
++    __errno_location :: () -> *OS_Error_Code #foreign libc "__errno";
+ }
+ #scope_export
+ errno :: inline () -> OS_Error_Code #no_context {
+@@ -45,33 +52,40 @@ set_errno :: inline (value: OS_Error_Code) #no_context {
+ }
+ 
+ write  :: (fd: s32, buf: *void, count: size_t) -> ssize_t #foreign libc;
+-pwrite :: (fd: s32, buf: *void, count: size_t, offset: off_t) -> ssize_t #foreign libc;
++#if OS != .NN_3DS {
++    pwrite :: (fd: s32, buf: *void, count: size_t, offset: off_t) -> ssize_t #foreign libc;
++}
+ getenv :: (name: *u8) -> *u8 #foreign libc;
+ perror :: (s: *u8) #foreign libc;
+ 
+-chmod :: (path: *u8, mode: mode_t) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    chmod :: (path: *u8, mode: mode_t) -> s32 #foreign libc;
+ 
+-// The linux man-page says argument 3 is an untyped pointer but it's always specified/declared as ... (variadic argument) in C..? -josh March 32, 2017
+-ioctl :: (fd: s32, request: u64, args: .. Any) -> s32 #foreign libc;
++    // The linux man-page says argument 3 is an untyped pointer but it's always specified/declared as ... (variadic argument) in C..? -josh March 32, 2017
++    ioctl :: (fd: s32, request: u64, args: .. Any) -> s32 #foreign libc;
+ 
+-getuid :: () -> uid_t #foreign libc;
+-geteuid :: () -> uid_t #foreign libc;
+-
+-getpwnam :: (name: *u8) -> *passwd #foreign libc;
+-getpwuid :: (uid: uid_t) -> *passwd #foreign libc;
+-getpwnam_r :: (name: *u8, pwd: *passwd, buffer: *u8, bufsize: size_t, result: **passwd) -> s32 #foreign libc;
+-getpwuid_r :: (uid: uid_t, pwd: *passwd, buffer: *u8, bufsize: size_t, result: **passwd) -> s32 #foreign libc;
++    getuid :: () -> uid_t #foreign libc;
++    geteuid :: () -> uid_t #foreign libc;
+ 
++    getpwnam :: (name: *u8) -> *passwd #foreign libc;
++    getpwuid :: (uid: uid_t) -> *passwd #foreign libc;
++    getpwnam_r :: (name: *u8, pwd: *passwd, buffer: *u8, bufsize: size_t, result: **passwd) -> s32 #foreign libc;
++    getpwuid_r :: (uid: uid_t, pwd: *passwd, buffer: *u8, bufsize: size_t, result: **passwd) -> s32 #foreign libc;
++}
+ 
+ wait :: (stat_loc: *s32) -> pid_t #foreign libc;
+-waitpid :: (pid: pid_t, stat_loc: *s32, options: s32) -> pid_t #foreign libc;
+ kill :: (pid: pid_t, sig: s32) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    waitpid :: (pid: pid_t, stat_loc: *s32, options: s32) -> pid_t #foreign libc;
++}
+ 
+ fork :: () -> pid_t #foreign libc;
+ 
+-// @Cleanup sigh, "dup" conflicts with String.jai having dup :: duplicate;
+-dupfd :: (oldfd: s32) -> s32 #foreign libc "dup";
+-dup2 :: (oldfd: s32, newfd: s32) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    // @Cleanup sigh, "dup" conflicts with String.jai having dup :: duplicate;
++    dupfd :: (oldfd: s32) -> s32 #foreign libc "dup";
++    dup2 :: (oldfd: s32, newfd: s32) -> s32 #foreign libc;
++}
+ 
+ // @Cleanup do these need to be pointers in jai? or do we pass a flat array by address?
+ pipe :: (pipefd: *[2] s32) -> s32 #foreign libc;
+@@ -80,14 +94,16 @@ pipe :: (pipefd: *[2] s32) -> s32 #foreign libc;
+     pipe2 :: (pipefd: *[2] s32, flags: s32) -> s32 #foreign libc;
+ }
+ 
+-shmget :: (key: key_t, size: size_t, shmflg: s32) -> s32 #foreign libc;
+-shm_open :: (name: *u8, oflag: s32, mode: mode_t) -> s32 #foreign librt;
+-shm_unlink :: (name: *u8) -> s32 #foreign librt;
++#if OS != .NN_3DS {
++    shmget :: (key: key_t, size: size_t, shmflg: s32) -> s32 #foreign libc;
++    shm_open :: (name: *u8, oflag: s32, mode: mode_t) -> s32 #foreign librt;
++    shm_unlink :: (name: *u8) -> s32 #foreign librt;
+ 
+-getlogin_r :: (buf: *u8, bufsize: size_t) -> s32 #foreign libc;
+-getlogin :: (buf: *u8) -> *u8 #foreign libc;
++    getlogin_r :: (buf: *u8, bufsize: size_t) -> s32 #foreign libc;
++    getlogin :: (buf: *u8) -> *u8 #foreign libc;
+ 
+-fnmatch :: (pattern: *u8, name: *u8, flags: s32) -> s32 #foreign libc;
++    fnmatch :: (pattern: *u8, name: *u8, flags: s32) -> s32 #foreign libc;
++}
+ 
+ time :: (calptr : *time_t) -> time_t #foreign libc;
+ gmtime :: (calptr : *time_t) -> *tm #foreign libc;
+@@ -123,8 +139,10 @@ _remove :: (path: *u8) -> s32 #foreign libc "remove";
+ unlink :: (pathname: *u8) -> s32 #foreign libc;
+ link :: (oldpath: *u8, newpath: *u8) -> s32 #foreign libc;
+ 
+-uname :: (name : *utsname) -> s32 #foreign libc;
+-gethostname :: (name: *s8, namelen: size_t) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    uname :: (name : *utsname) -> s32 #foreign libc;
++    gethostname :: (name: *s8, namelen: size_t) -> s32 #foreign libc;
++}
+ 
+ closedir :: (dirp: *DIR) -> s32 #foreign libc;
+ #if OS == .MACOS {
+@@ -147,35 +165,43 @@ access :: (pathname: *u8, mode: s32) -> s32 #foreign libc;
+ // this conflicts with Basic/posix.jai
+ // exit :: (status: s32) #foreign libc;
+ 
+-readlink :: (path: *u8, buf: *u8, bufsize: size_t) -> ssize_t #foreign libc;
+-realpath :: (filename: *u8, symlink: *u8) -> *u8 #foreign libc;
++#if OS != .NN_3DS {
++    readlink :: (path: *u8, buf: *u8, bufsize: size_t) -> ssize_t #foreign libc;
++    realpath :: (filename: *u8, symlink: *u8) -> *u8 #foreign libc;
+ 
+-getcwd :: (buf: *u8, size: size_t) -> *u8 #foreign libc;
++    getcwd :: (buf: *u8, size: size_t) -> *u8 #foreign libc;
+ 
+ 
+-mprotect :: (addr: *void, len: size_t, prot: s32) -> s32 #foreign libc;
+-mmap :: (addr: *void, len: size_t, prot: s32, flags: s32, fildes: s32, offset: off_t) -> *void #foreign libc;
+-munmap :: (addr: *void, len: size_t) -> s32 #foreign libc;
+-madvise :: (addr: *void, length: size_t, advice: s32) -> s32 #foreign libc;
++    mprotect :: (addr: *void, len: size_t, prot: s32) -> s32 #foreign libc;
++    mmap :: (addr: *void, len: size_t, prot: s32, flags: s32, fildes: s32, offset: off_t) -> *void #foreign libc;
++    munmap :: (addr: *void, len: size_t) -> s32 #foreign libc;
++    madvise :: (addr: *void, length: size_t, advice: s32) -> s32 #foreign libc;
+ 
+-poll :: (fds: *pollfd, nfds: nfds_t, timeout: s32) -> s32 #foreign libc;
++    poll :: (fds: *pollfd, nfds: nfds_t, timeout: s32) -> s32 #foreign libc;
++}
+ 
+ system :: (command: *u8) -> s32 #foreign libc;
+-execvp :: (file: *u8, argv: **u8) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    execvp :: (file: *u8, argv: **u8) -> s32 #foreign libc;
++}
+ 
+ raise :: (signum: s32) -> s32 #foreign libc;
+ 
+ 
+-sigaction :: (signum: s32, act: *sigaction_t, oldact: *sigaction_t) -> s32 #foreign libc;
+-sigemptyset :: (set: *sigset_t) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    sigaction :: (signum: s32, act: *sigaction_t, oldact: *sigaction_t) -> s32 #foreign libc;
++    sigemptyset :: (set: *sigset_t) -> s32 #foreign libc;
+ 
+-backtrace :: (array: **void, size: s32) -> s32 #foreign libexecinfo;
+-backtrace_symbols :: (array: **void, size: s32) -> **u8 #foreign libexecinfo;
+-backtrace_symbols_fd :: (array: **void, size: s32, fd: s32) #foreign libexecinfo;
++    backtrace :: (array: **void, size: s32) -> s32 #foreign libexecinfo;
++    backtrace_symbols :: (array: **void, size: s32) -> **u8 #foreign libexecinfo;
++    backtrace_symbols_fd :: (array: **void, size: s32, fd: s32) #foreign libexecinfo;
++}
+ 
+ getpid :: () -> pid_t #foreign libc;
+-getsid :: (pid: pid_t) -> pid_t #foreign libc;
+-getppid :: () -> pid_t #foreign libc;
++#if OS != .NN_3DS {
++    getsid :: (pid: pid_t) -> pid_t #foreign libc;
++    getppid :: () -> pid_t #foreign libc;
++}
+ 
+ #if OS == .LINUX {
+     // These exist on macOS, but always return -1. (Because they are not really implemented.)
+@@ -187,24 +213,32 @@ getppid :: () -> pid_t #foreign libc;
+     sem_timedwait :: (sem: *sem_t, abs_timeout: *timespec) -> s32 #foreign pthreads;
+ }
+ 
+-// librt functions
+-// @TODO clock_ functions are not available in OSX prior to 10.12
+-clock_gettime :: (clk: clockid_t, tp: *timespec) -> int #foreign librt;
+-clock_getres  :: (clk: clockid_t, tp: *timespec) -> int #foreign librt;
+-clock_settime :: (clk: clockid_t, tp: *timespec) -> int #foreign librt;
++#if OS != .NN_3DS {
++    // librt functions
++    // @TODO clock_ functions are not available in OSX prior to 10.12
++    clock_gettime :: (clk: clockid_t, tp: *timespec) -> int #foreign librt;
++    clock_getres  :: (clk: clockid_t, tp: *timespec) -> int #foreign librt;
++    clock_settime :: (clk: clockid_t, tp: *timespec) -> int #foreign librt;
++}
+ 
+ // @header fcntl.h
+ 
+ open   :: (pathname: *u8, flags: s32) -> s32 #foreign libc;
+ open   :: (pathname: *u8, flags: s32, mode: mode_t) -> s32 #foreign libc;
+-openat :: (directory: s32, pathname: *u8, flags: s32) -> s32 #foreign libc;
+-openat :: (directory: s32, pathname: *u8, flags: s32, mode: mode_t) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    openat :: (directory: s32, pathname: *u8, flags: s32) -> s32 #foreign libc;
++    openat :: (directory: s32, pathname: *u8, flags: s32, mode: mode_t) -> s32 #foreign libc;
++}
+ fcntl  :: (fd: s32, cmd: s32, optional: .. Any) -> s32 #foreign libc;
+ 
+ read  :: (fd: s32, buf: *void, count: size_t) -> ssize_t #foreign libc;
+-pread :: (fd: s32, buf: *void, count: size_t, offset: off_t) -> ssize_t #foreign libc;
++#if OS != .NN_3DS {
++    pread :: (fd: s32, buf: *void, count: size_t, offset: off_t) -> ssize_t #foreign libc;
++}
+ close :: (fd: s32) -> s32 #foreign libc;
+-ftruncate :: (fd: s32, length: off_t) -> s32 #foreign libc;
++#if OS != .NN_3DS {
++    ftruncate :: (fd: s32, length: off_t) -> s32 #foreign libc;
++}
+ 
+ #if OS == .LINUX {
+     // for some reason a handfull of syscalls on Linux arent available in libc.so by default
+@@ -220,14 +254,16 @@ ftruncate :: (fd: s32, length: off_t) -> s32 #foreign libc;
+ 
+ // @header aio.h
+ 
+-aio_cancel  :: (fd: s32, aiocbp: *aiocb_t) -> s32 #foreign librt;
+-aio_error   :: (aiocbp: *aiocb_t) -> s32 #foreign librt;
+-aio_fsync   :: (op: s32, aiocbp: *aiocb_t) -> s32 #foreign librt;
+-aio_read    :: (aiocbp: *aiocb_t) -> s32 #foreign librt;
+-aio_return  :: (aiocbp: *aiocb_t) -> ssize_t #foreign librt;
+-aio_suspend :: (aiocblist: **aiocb_t, nent: s32, timeout: *timespec) -> s32 #foreign librt;
+-aio_write   :: (aiocbp: *aiocb_t) -> s32 #foreign librt;
+-lio_listio  :: (mode: s32, aiocblist: **aiocb_t, nent: s32, sigp: *sigevent_t) -> s32 #foreign librt;
++#if OS != .NN_3DS {
++    aio_cancel  :: (fd: s32, aiocbp: *aiocb_t) -> s32 #foreign librt;
++    aio_error   :: (aiocbp: *aiocb_t) -> s32 #foreign librt;
++    aio_fsync   :: (op: s32, aiocbp: *aiocb_t) -> s32 #foreign librt;
++    aio_read    :: (aiocbp: *aiocb_t) -> s32 #foreign librt;
++    aio_return  :: (aiocbp: *aiocb_t) -> ssize_t #foreign librt;
++    aio_suspend :: (aiocblist: **aiocb_t, nent: s32, timeout: *timespec) -> s32 #foreign librt;
++    aio_write   :: (aiocbp: *aiocb_t) -> s32 #foreign librt;
++    lio_listio  :: (mode: s32, aiocblist: **aiocb_t, nent: s32, sigp: *sigevent_t) -> s32 #foreign librt;
++}
+ 
+ // @header unistd.h
+ #if OS == .MACOS {
+@@ -236,22 +272,31 @@ lio_listio  :: (mode: s32, aiocblist: **aiocb_t, nent: s32, sigp: *sigevent_t) -
+ 
+ // @header dlfcn.h
+ 
+-dynamic_linker :: #system_library "libdl";
++#if OS != .NN_3DS {
++    dynamic_linker :: #system_library "libdl";
+ 
+-dlopen  :: (filename: *u8, flag: s32) -> *void #foreign dynamic_linker;
+-dlerror :: () -> *u8 #foreign dynamic_linker;
+-dlsym   :: (handle: *void, symbol: *u8) -> *void #foreign dynamic_linker;
+-#if OS == .LINUX && GNU_ENV {
+-    dlvsym :: (handle: *void, symbol: *u8, version: *u8) -> *void #foreign dynamic_linker;
++    dlopen  :: (filename: *u8, flag: s32) -> *void #foreign dynamic_linker;
++    dlerror :: () -> *u8 #foreign dynamic_linker;
++    dlsym   :: (handle: *void, symbol: *u8) -> *void #foreign dynamic_linker;
++    #if OS == .LINUX && GNU_ENV {
++        dlvsym :: (handle: *void, symbol: *u8, version: *u8) -> *void #foreign dynamic_linker;
++    }
++    dlclose :: (handle: *void) -> s32 #foreign dynamic_linker;
+ }
+-dlclose :: (handle: *void) -> s32 #foreign dynamic_linker;
+ 
+ #scope_file
+-libc :: #system_library "libc";
+-libm :: #system_library "libm";
++#if OS == .NN_3DS {
++    libc :: #system_library,no_dll "libc";
++    libm :: #system_library,no_dll "libm";
++}
++else {
++    libc :: #system_library "libc";
++    libm :: #system_library "libm";
++}
+ 
+ #if OS == .LINUX librt :: #system_library "librt";
+ else #if OS == .MACOS librt :: libc;
++else #if OS == .NN_3DS librt :: libc;
+ 
+ #if OS == .LINUX && !GNU_ENV {
+     libexecinfo :: #system_library "libexecinfo";
+diff --git a/modules/POSIX/module.jai b/modules/POSIX/module.jai
+index 696ef2e..24bd551 100644
+--- a/modules/POSIX/module.jai
++++ b/modules/POSIX/module.jai
+@@ -4,9 +4,14 @@
+ // don't want to use much from there since we can just directly use the Windows APIs. However,
+ // some types like size_t are commonly used in cross-platform libraries so we may want a way to
+ // access those without pulling in all of the types, constants, and inline functions in POSIX.jai
+-#assert(OS == .LINUX || OS == .MACOS);
++#assert(OS == .LINUX || OS == .MACOS || OS == .NN_3DS);
+ 
+-#load "POSIX.jai";
++#if OS == .NN_3DS {
++    #load "3DS.jai";
++}
++else {
++    #load "POSIX.jai";
++}
+ #load "libc_bindings.jai";
+ 
+ #if OS == .LINUX {
+diff --git a/modules/Preload.jai b/modules/Preload.jai
+index e379385..b7bbe22 100644
+--- a/modules/Preload.jai
++++ b/modules/Preload.jai
+@@ -29,6 +29,7 @@ Operating_System_Tag :: enum u32 {
+     PS4       :: 8;
+     PS5       :: 9;
+     XBOX      :: 10; // Xbox One, Xbox Two, whatever. Like Windows but different.
++    NN_3DS    :: 11; // The Nintendo 3DS
+ }
+ 
+ Type_Info_Tag :: enum u32 {
+diff --git a/modules/Process/module.jai b/modules/Process/module.jai
+index fc2b78e..02791a1 100644
+--- a/modules/Process/module.jai
++++ b/modules/Process/module.jai
+@@ -6,7 +6,7 @@
+ 
+ #if OS == .WINDOWS {
+     #load "windows.jai";
+-} else #if (OS == .LINUX) || (OS == .MACOS) {
++} else #if (OS == .LINUX) || (OS == .MACOS) || (OS == .NN_3DS) {
+     #import "Basic";
+     #import "POSIX";
+     #load "posix.jai";
+diff --git a/modules/Runtime_Support.jai b/modules/Runtime_Support.jai
+index ea31a59..e4925d4 100644
+--- a/modules/Runtime_Support.jai
++++ b/modules/Runtime_Support.jai
+@@ -276,7 +276,7 @@ write_string_unsynchronized :: (s: string, to_standard_error := false) #no_conte
+         written: ssize_t;
+ 
+         while written != s.count {
+-            result := write(handle, s.data + written, cast(u64) (s.count - written));
++            result := write(handle, s.data + written, cast(size_t) (s.count - written));
+             // We should probably be checking errno for failures,
+             // but, on macOS at least, we seem to be getting interrupted
+             // only be EAGAIN.
+@@ -302,6 +302,9 @@ write_string :: (s: string, to_standard_error := false) #no_context #compiler {
+         EnterCriticalSection(*write_string_critical_section);
+         write_string_unsynchronized(s, to_standard_error);
+         LeaveCriticalSection(*write_string_critical_section);
++    } else #if OS == .NN_3DS {
++        //@TODO: Unsafe! Replace with LightLock or something?
++        write_string_unsynchronized(s, to_standard_error);
+     } else {
+         pthread_mutex_lock(*write_string_mutex);
+         write_string_unsynchronized(s, to_standard_error);
+@@ -324,6 +327,9 @@ write_strings :: (strings: ..string, to_standard_error := false) #no_context #co
+         EnterCriticalSection(*write_string_critical_section);
+         for strings write_string_unsynchronized(it, to_standard_error);
+         LeaveCriticalSection(*write_string_critical_section);
++    } else #if OS == .NN_3DS {
++        //@TODO: Unsafe! Replace with LightLock or something?
++        for strings write_string_unsynchronized(it, to_standard_error);
+     } else {
+         pthread_mutex_lock(*write_string_mutex);
+         for strings write_string_unsynchronized(it, to_standard_error);
+@@ -344,6 +350,8 @@ init_synchronization :: () #no_context {
+         STD_ERROR_HANDLE  :: -12;
+         windows_standard_output = GetStdHandle(STD_OUTPUT_HANDLE);
+         windows_standard_error  = GetStdHandle(STD_ERROR_HANDLE);
++    } else #if OS == .NN_3DS {
++        //@TODO: Replace with LightLock or something?
+     } else {
+         _pthread_mutexattr_t :: struct { size: [16] s8; }
+         #if OS == .MACOS {
+@@ -425,18 +433,18 @@ __system_entry_point :: (argc: s32, argv: **u8) -> s32 #c_call {
+ // Eventually we should not be calling malloc or free anywhere in here,
+ // as they rely on the C runtime.
+ // :RemoveMe
+-c_malloc  :: (size : u64) -> *void                  #foreign crt "malloc";
+-c_free    :: (memory: *void)                        #foreign crt "free";
+-c_realloc :: (memory: *void, size : u64) -> *void   #foreign crt "realloc";
++c_malloc  :: (size : size_t) -> *void                  #foreign crt "malloc";
++c_free    :: (memory: *void)                           #foreign crt "free";
++c_realloc :: (memory: *void, size : size_t) -> *void   #foreign crt "realloc";
+ 
+ runtime_support_default_allocator_proc :: (mode: Allocator_Mode, size: s64, old_size: s64, old_memory: *void, allocator_data: *void) -> *void {
+     using Allocator_Mode;
+ 
+     if #complete mode == {
+         case ALLOCATE;
+-            return c_malloc(cast(u64)size);
++            return c_malloc(cast(size_t)size);
+         case RESIZE;
+-            return c_realloc(old_memory, cast(u64)size);
++            return c_realloc(old_memory, cast(size_t)size);
+         case FREE;
+             c_free(old_memory);
+             return null;
+@@ -496,6 +504,13 @@ runtime_support_default_allocator_proc :: (mode: Allocator_Mode, size: s64, old_
+     }
+     
+     write_string_mutex: _pthread_mutex_t;
++} else #if OS == .NN_3DS {
++    crt :: #system_library "libc";
++
++    size_t  :: u32;
++    ssize_t :: s32;
++
++    write :: (fd: s32, buf: *void, count: size_t) -> ssize_t #foreign crt;
+ }
+ #scope_export
+ 
+diff --git a/modules/String/module.jai b/modules/String/module.jai
+index cd0467c..d336b35 100644
+--- a/modules/String/module.jai
++++ b/modules/String/module.jai
+@@ -1531,5 +1531,7 @@ Reflection :: #import "Reflection"; // @Cleanup: Probably should not require thi
+     crt :: #system_library "libm";
+ } else #if OS == .MACOS {
+     crt :: #system_library "libc";
++} else #if OS == .NN_3DS {
++    crt :: #system_library "libc";
+ }
+ 
+diff --git a/modules/System.jai b/modules/System.jai
+index 30b8f2e..b36aca3 100644
+--- a/modules/System.jai
++++ b/modules/System.jai
+@@ -1,5 +1,7 @@
+-os_get_username :: get_username; // @ToDo: Deprecate os_ names
+-os_get_machinename :: get_machinename; // @ToDo: Deprecate os_ names
++#if OS != .NN_3DS {
++    os_get_username :: get_username; // @ToDo: Deprecate os_ names
++    os_get_machinename :: get_machinename; // @ToDo: Deprecate os_ names
++}
+ 
+ // @@ Add to OS/System module?
+ // Returns a temporary string.
+@@ -486,5 +488,16 @@ os_get_machinename :: get_machinename; // @ToDo: Deprecate os_ names
+     }
+ }
+ 
++#if OS == .NN_3DS {
++    // Returns a string that doesn't need to be freed
++    get_home_directory :: (username := "") -> string, success: bool {
++        return "sdmc:/", false;
++    }
++
++    get_number_of_processors :: ($type: enum { ALL_PHYSICAL; ALL_LOGICAL; PERFORMANCE_PHYSICAL; PERFORMANCE_LOGICAL; } = .PERFORMANCE_LOGICAL) -> count: s32 {
++        return 2;
++    }
++}
++
+ #scope_file
+ Basic :: #import "Basic";
+diff --git a/modules/stb_sprintf/module.jai b/modules/stb_sprintf/module.jai
+index 82b6020..faeff3d 100644
+--- a/modules/stb_sprintf/module.jai
++++ b/modules/stb_sprintf/module.jai
+@@ -19,4 +19,6 @@ stbsp_set_separators :: (comma: u8, period: u8) #foreign libstb_sprintf;
+     libstb_sprintf :: #library "mac/stb_sprintf";
+ } else #if OS == .NN_SWITCH {
+     libstb_sprintf :: #library "switch/stb_sprintf";
+-}
++} else #if OS == .NN_3DS {
++    libstb_sprintf :: #library,no_dll "stb_sprintf";
++}
+\ No newline at end of file

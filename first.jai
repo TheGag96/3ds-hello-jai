@@ -6,8 +6,6 @@
 #import "Sort";
 #import "String";
 
-COMPILER_FIXED :: false; // @TODO: Remove when compiler is fixed to let this project compile properly
-
 PROJECT_NAME    :: "hello";
 OPTIMIZED_BUILD :: false;
 
@@ -33,11 +31,14 @@ build :: () {
 
   target_options.backend                             = .LLVM;
   target_options.output_type                         = .OBJECT_FILE;
-  target_options.os_target                           = .NONE;
+  target_options.output_flags                        = .INCLUDE_SYSTEM_ENTRY_POINT_IN_NON_EXECUTABLE_OUTPUT;
+  target_options.output_executable_name              = "3ds";
+  target_options.os_target                           = .NN_3DS;
+  target_options.backtrace_on_crash                  = .OFF;
   target_options.llvm_options.target_system_triple   = "arm-none-eabi";
   target_options.llvm_options.target_system_cpu      = "mpcorenovfp";
   target_options.llvm_options.target_system_features = "+vfp2";
-  target_options.output_executable_name              = "3ds";
+  target_options.llvm_options.command_line           = string.["llvm", "--float-abi=hard"];
   target_options.llvm_options.output_bitcode         = true;
   target_options.llvm_options.enable_split_modules   = false;
 
@@ -155,6 +156,9 @@ build :: () {
 
   compiler_end_intercept(w);
 
+  // I'm assuming this will happen if compilation fails
+  if !obj_files.count return;
+
   //
   // Link and create .3dsx
   //
@@ -162,7 +166,7 @@ build :: () {
     // All of the architecture args are important! You'll get an error about 3dsx_crt0.o if you don't include them all.
     ARCH_FLAGS :: string.["-specs=3dsx.specs", "-march=armv6k", "-mtune=mpcore", "-mfloat-abi=hard", "-mtp=soft"];
     LIB_DIRS   :: string.[#run tprint("-L%/libctru/lib", DEVKITPRO)];
-    LIBS       :: string.["-lcitro3d", "-lctru", "-lm"];
+    LIBS       :: string.["-lcitro3d", "-lctru", "-lm", "lib/stb_sprintf.o"];
 
     elf_name   := tprint("%.elf",  PROJECT_NAME);
     smdh_name  := tprint("%.smdh", PROJECT_NAME);
@@ -182,19 +186,16 @@ build :: () {
       fail_string = "Failed to create SMDH!"
     );
 
-    #if COMPILER_FIXED {
-      cmd(
-        ..link_args,
-        fail_string = "Failed to link!"
-      );
+    cmd(
+      ..link_args,
+      fail_string = "Failed to link!"
+    );
 
-      cmd(
-        "3dstool", elf_name, _3dsx_name, tprint("--smdh=%", smdh_name), "--romfs=romfs",
-        fail_string = "Failed to create 3dsx!"
-      );
-    }
+    cmd(
+      "3dsxtool", elf_name, _3dsx_name, tprint("--smdh=%", smdh_name), "--romfs=romfs",
+      fail_string = "Failed to create 3dsx!"
+    );
   }
-
 }
 
 // Thanks to tsoding! https://github.com/tsoding/jai-wasm/blob/master/first.jai#L31-L77
