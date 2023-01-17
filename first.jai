@@ -34,6 +34,7 @@ build :: () {
   target_options.output_flags                        = .INCLUDE_SYSTEM_ENTRY_POINT_IN_NON_EXECUTABLE_OUTPUT;
   target_options.output_executable_name              = "3ds";
   target_options.os_target                           = .NN_3DS;
+  target_options.cpu_target                          = .ARM32;
   target_options.backtrace_on_crash                  = .OFF;
   target_options.llvm_options.target_system_triple   = "arm-none-eabi";
   target_options.llvm_options.target_system_cpu      = "mpcorenovfp";

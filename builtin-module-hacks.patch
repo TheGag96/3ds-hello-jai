@@ -1,5 +1,45 @@
+diff --git a/modules/Default_Allocator/module.jai b/modules/Default_Allocator/module.jai
+index 16af74b..64665ef 100644
+--- a/modules/Default_Allocator/module.jai
++++ b/modules/Default_Allocator/module.jai
+@@ -3,9 +3,9 @@ default_allocator_proc :: (mode: Allocator_Mode, size: s64, old_size: s64, old_m
+ 
+     if #complete mode == {
+         case ALLOCATE;
+-            return c_malloc(cast(u64)size);
++            return c_malloc(cast(size_t)size);
+         case RESIZE;
+-            return c_realloc(old_memory, cast(u64)size);
++            return c_realloc(old_memory, cast(size_t)size);
+         case FREE;
+             c_free(old_memory);
+             return null;
+@@ -18,12 +18,20 @@ default_allocator_proc :: (mode: Allocator_Mode, size: s64, old_size: s64, old_m
+ }
+ 
+ #scope_file
++
++#if OS == .NN_3DS {
++    size_t :: u32;
++}
++else {
++    size_t :: u64;
++}
++
+ // We are leaving c_malloc, c_free, c_realloc here for a little bit so that
+ // people can use them as a fallback, but they will be removed before too long.
+ //     -jblow, 15 January 2023
+-c_malloc  :: (size : u64) -> *void                  #foreign crt "malloc";
+-c_free    :: (memory: *void)                        #foreign crt "free";
+-c_realloc :: (memory: *void, size : u64) -> *void   #foreign crt "realloc";
++c_malloc  :: (size : size_t) -> *void                  #foreign crt "malloc";
++c_free    :: (memory: *void)                           #foreign crt "free";
++c_realloc :: (memory: *void, size : size_t) -> *void   #foreign crt "realloc";
+ 
+ #if OS == .WINDOWS {
+     crt      :: #system_library "msvcrt";  // For malloc, free on Windows
 diff --git a/modules/File/module.jai b/modules/File/module.jai
-index 47e93c5..628661d 100644
+index e6e0b1c..b22b145 100644
 --- a/modules/File/module.jai
 +++ b/modules/File/module.jai
 @@ -1,6 +1,6 @@
@@ -11,7 +51,7 @@ index 47e93c5..628661d 100644
  }
  
 diff --git a/modules/File/unix.jai b/modules/File/unix.jai
-index 9db732f..8c17e80 100644
+index 12fe992..3bc5b0a 100644
 --- a/modules/File/unix.jai
 +++ b/modules/File/unix.jai
 @@ -116,8 +116,8 @@ read_entire_file :: (f: File, zero_terminated := false) -> string, bool {
@@ -36,6 +76,122 @@ index 9db732f..8c17e80 100644
  }
  
  delete_directory :: (dirname: string) {
+diff --git a/modules/POSIX/3DS.jai b/modules/POSIX/3DS.jai
+new file mode 100644
+index 0000000..e9d62aa
+--- /dev/null
++++ b/modules/POSIX/3DS.jai
+@@ -0,0 +1,110 @@
++GNU_ENV :: false; // set to true to enable GNU/glibc additions such as dlvsym
++
++OS_Error_Code :: #type,isa s32;
++
++size_t    :: u32;
++ssize_t   :: s32;
++ptrdiff_t :: s32;
++wchar_t   :: s32;
++wint_t    :: u32;
++uintptr_t :: u32;
++off_t     :: s32;
++mode_t    :: s32;
++gid_t     :: s32;
++dev_t     :: s32;
++uid_t     :: s32;
++blksize_t :: s32;
++blkcnt_t  :: s32;
++nlink_t   :: u16;
++ino_t     :: u32;
++pid_t     :: s32;
++
++FILE :: void;
++
++time_t      :: s64;
++suseconds_t :: s32;
++
++timeval :: struct {
++    tv_sec:  time_t; /* seconds */
++    tv_usec: suseconds_t; /* and microseconds */
++}
++
++timespec :: struct {
++    tv_sec: time_t;     /* seconds */
++    tv_nsec: s32;    /* and nanoseconds */
++}
++
++in_port_t :: u16;
++in_addr_t :: u32;
++
++_LOCK_T :: s32;
++
++_LOCK_RECURSIVE_T :: struct {
++    lock: _LOCK_T;
++    thread_tag: s32;
++    counter: s32;
++}
++
++stat :: struct {
++    st_dev:     dev_t;
++    st_ino:     ino_t;
++    st_mode:    mode_t;
++    st_nlink:   nlink_t;
++    st_uid:     uid_t;
++    st_gid:     gid_t;
++    st_rdev:    dev_t;
++    st_size:    off_t;
++    st_atim:    timespec;
++    st_mtim:    timespec;
++    st_ctim:    timespec;
++    st_blksize: blksize_t;
++    st_blocks:  blkcnt_t;
++    st_spare4:  [2] s32;
++}
++
++passwd :: struct {
++    pw_name:    *u8;    /* user name */
++    pw_passwd:  *u8;    /* encrypted password */
++    pw_uid:      uid_t; /* user uid */
++    pw_gid:      gid_t; /* user gid */
++    pw_comment: *u8;    /* comment */
++    pw_gecos:   *u8;    /* Honeywell login info */
++    pw_dir:     *u8;    /* home directory */
++    pw_shell:   *u8;    /* default shell */
++}
++
++/* Directory iterator for mantaining state between dir* calls */
++DIR_ITER :: struct {
++    device:     s32;
++    dirStruct: *void;
++}
++
++NAME_MAX :: 255;
++
++dirent :: struct {
++    d_ino:  ino_t;
++    d_type: u8;
++    d_name: [NAME_MAX+1] s8;
++}
++
++DIR :: struct {
++    position: s32;
++    dirData: *DIR_ITER;
++    fileData: dirent;
++}
++
++SEEK_SET : s32 : 0;
++SEEK_CUR : s32 : 1;
++SEEK_END : s32 : 2;
++
++tm :: struct {
++    tm_sec:   int;
++    tm_min:   int;
++    tm_hour:  int;
++    tm_mday:  int;
++    tm_mon:   int;
++    tm_year:  int;
++    tm_wday:  int;
++    tm_yday:  int;
++    tm_isdst: int;
++};
 diff --git a/modules/POSIX/libc_bindings.jai b/modules/POSIX/libc_bindings.jai
 index f1146af..1140a54 100644
 --- a/modules/POSIX/libc_bindings.jai
@@ -355,7 +511,7 @@ index 696ef2e..24bd551 100644
  
  #if OS == .LINUX {
 diff --git a/modules/Preload.jai b/modules/Preload.jai
-index e379385..b7bbe22 100644
+index cb368e5..e551314 100644
 --- a/modules/Preload.jai
 +++ b/modules/Preload.jai
 @@ -29,6 +29,7 @@ Operating_System_Tag :: enum u32 {
@@ -363,6 +519,14 @@ index e379385..b7bbe22 100644
      PS5       :: 9;
      XBOX      :: 10; // Xbox One, Xbox Two, whatever. Like Windows but different.
 +    NN_3DS    :: 11; // The Nintendo 3DS
+ }
+ 
+ CPU_Tag :: enum u32 {
+@@ -37,6 +38,7 @@ CPU_Tag :: enum u32 {
+     CUSTOM        :: 2;
+     X64           :: 3;
+     ARM64         :: 4;
++    ARM32         :: 5;
  }
  
  Type_Info_Tag :: enum u32 {
@@ -380,7 +544,7 @@ index fc2b78e..02791a1 100644
      #import "POSIX";
      #load "posix.jai";
 diff --git a/modules/Runtime_Support.jai b/modules/Runtime_Support.jai
-index ea31a59..e4925d4 100644
+index 22a9c41..8b8e7f1 100644
 --- a/modules/Runtime_Support.jai
 +++ b/modules/Runtime_Support.jai
 @@ -276,7 +276,7 @@ write_string_unsynchronized :: (s: string, to_standard_error := false) #no_conte
@@ -421,31 +585,7 @@ index ea31a59..e4925d4 100644
      } else {
          _pthread_mutexattr_t :: struct { size: [16] s8; }
          #if OS == .MACOS {
-@@ -425,18 +433,18 @@ __system_entry_point :: (argc: s32, argv: **u8) -> s32 #c_call {
- // Eventually we should not be calling malloc or free anywhere in here,
- // as they rely on the C runtime.
- // :RemoveMe
--c_malloc  :: (size : u64) -> *void                  #foreign crt "malloc";
--c_free    :: (memory: *void)                        #foreign crt "free";
--c_realloc :: (memory: *void, size : u64) -> *void   #foreign crt "realloc";
-+c_malloc  :: (size : size_t) -> *void                  #foreign crt "malloc";
-+c_free    :: (memory: *void)                           #foreign crt "free";
-+c_realloc :: (memory: *void, size : size_t) -> *void   #foreign crt "realloc";
- 
- runtime_support_default_allocator_proc :: (mode: Allocator_Mode, size: s64, old_size: s64, old_memory: *void, allocator_data: *void) -> *void {
-     using Allocator_Mode;
- 
-     if #complete mode == {
-         case ALLOCATE;
--            return c_malloc(cast(u64)size);
-+            return c_malloc(cast(size_t)size);
-         case RESIZE;
--            return c_realloc(old_memory, cast(u64)size);
-+            return c_realloc(old_memory, cast(size_t)size);
-         case FREE;
-             c_free(old_memory);
-             return null;
-@@ -496,6 +504,13 @@ runtime_support_default_allocator_proc :: (mode: Allocator_Mode, size: s64, old_
+@@ -472,6 +480,13 @@ runtime_support_default_allocator_proc :: Default_Allocator.default_allocator_pr
      }
      
      write_string_mutex: _pthread_mutex_t;
@@ -460,7 +600,7 @@ index ea31a59..e4925d4 100644
  #scope_export
  
 diff --git a/modules/String/module.jai b/modules/String/module.jai
-index cd0467c..d336b35 100644
+index 7de0c84..0a123a6 100644
 --- a/modules/String/module.jai
 +++ b/modules/String/module.jai
 @@ -1531,5 +1531,7 @@ Reflection :: #import "Reflection"; // @Cleanup: Probably should not require thi
